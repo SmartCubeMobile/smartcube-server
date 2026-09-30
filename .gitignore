@@ -1,0 +1,21 @@
+# Build output / IDE
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+# Secrets and machine-specific settings: copy appsettings.Example.json to appsettings.json
+appsettings.json
+
+# Live data and large files that belong to this machine only
+App_Data/
+Installers/
+logs/
+app_offline.htm
+*.mdf
+*.ldf
+
+# Old backups
+*.bak
+

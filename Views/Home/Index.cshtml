@@ -1,0 +1,28 @@
+@{ ViewData["Title"] = "Home"; }
+
+<section class="hero">
+    <div class="container hero-grid">
+        <div class="hero-copy">
+            <div class="eyebrow"><span class="pulse"></span> Your finances, brought together</div>
+            <h1>Make your money <em>work smarter.</em></h1>
+            <p class="hero-text">SmartCubeMobile gives you a clearer view of your financial information, helping you understand your accounts, transactions and spending in one simple place.</p>
+            <div class="hero-actions">
+                <a class="btn btn-primary btn-large" asp-area="Identity" asp-page="/Account/Register">Get started <span>→</span></a>
+                <a class="btn btn-outline btn-large" asp-controller="Home" asp-action="About">Discover SmartCubeMobile</a>
+            </div>
+            <div class="trust-row"><span>✓ Designed with security in mind</span><span>✓ Simple to use</span></div>
+        </div>
+        <div class="dashboard-card">
+            <div class="dash-top"><span>Financial overview</span><span class="live-dot">● Live</span></div>
+            <div class="dash-balance"><small>Total balance</small><strong>£12,458.32</strong><span class="positive">↑ 8.4% this month</span></div>
+            <div class="chart"><div class="bar b1"></div><div class="bar b2"></div><div class="bar b3"></div><div class="bar b4"></div><div class="bar b5"></div><div class="bar b6"></div><div class="bar b7"></div><div class="bar b8"></div><div class="bar b9"></div><div class="chart-line"></div></div>
+            <div class="dash-stats"><div><small>Income</small><b>£4,820</b></div><div><small>Spending</small><b>£2,146</b></div><div><small>Saved</small><b>£1,240</b></div></div>
+        </div>
+    </div>
+</section>
+
+<section class="section"><div class="container"><div class="section-heading"><div class="eyebrow">ONE CLEAR VIEW</div><h2>Everything you need to understand your finances.</h2><p>Designed to turn financial information into something useful, understandable and actionable.</p></div><div class="feature-grid"><article class="feature-card"><div class="icon">▦</div><h3>Accounts in one place</h3><p>Bring your financial information together so you can see the bigger picture.</p></article><article class="feature-card"><div class="icon">↗</div><h3>Understand transactions</h3><p>Explore transactions and balances with information presented clearly and consistently.</p></article><article class="feature-card"><div class="icon">◒</div><h3>Make better decisions</h3><p>Turn your financial data into insights that help you plan with confidence.</p></article></div></div></section>
+
+<section class="security-strip"><div class="container split"><div><div class="eyebrow">SECURITY FIRST</div><h2>Your financial information deserves protection.</h2></div><div><p>SmartCubeMobile is being built with security at the heart of the experience, with careful handling of account information and a strong focus on protecting user access.</p><a asp-controller="Home" asp-action="Security" class="text-link">Learn about security →</a></div></div></section>
+
+<section class="cta-section"><div class="container cta-box"><div><div class="eyebrow">GET STARTED</div><h2>Ready to take control?</h2><p>Create your SmartCubeMobile account and get started.</p></div><a class="btn btn-primary btn-large" asp-area="Identity" asp-page="/Account/Register">Create your account →</a></div></section>

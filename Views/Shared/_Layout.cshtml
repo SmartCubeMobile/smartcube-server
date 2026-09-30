@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SmartCubeMobile</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/smartcubemobile.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="site">
+        <header class="topbar">
+            <div class="container nav-wrap">
+                <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/images/smartcube-mobile-logo.png" asp-append-version="true"
+                         alt="SmartCube Mobile"
+                         style="display:block;height:63px;width:auto;" />
+                </a>
+
+                <nav class="desktop-nav">
+                    <a asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                    <a asp-area="" asp-controller="Home" asp-action="About">About</a>
+                    <a asp-area="" asp-controller="Home" asp-action="Security">Security</a>
+                    <a asp-area="" asp-controller="Home" asp-action="Subscribe">Subscribe</a>
+                    <a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a>
+                </nav>
+
+                <div class="nav-actions">
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </header>
+
+        <main role="main">
+            @RenderBody()
+        </main>
+
+        <footer class="footer">
+            <div class="container footer-grid">
+                <div>
+                    <a class="brand footer-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                        <img src="~/images/smartcube-mobile-logo.png" asp-append-version="true"
+                             alt="SmartCube Mobile"
+                             style="display:block;height:51px;width:auto;" />
+                    </a>
+                    <p>Smarter financial information. Simpler decisions.</p>
+                </div>
+                <div>
+                    <h4>Product</h4>
+                    <a asp-controller="Home" asp-action="About">About</a>
+                    <a asp-controller="Home" asp-action="Security">Security</a>
+                    <a asp-controller="Home" asp-action="Subscribe">Subscribe</a>
+                </div>
+                <div>
+                    <h4>Company</h4>
+                    <a asp-controller="Home" asp-action="Contact">Contact</a>
+                    <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+                    <a asp-controller="Home" asp-action="TermsConditions">Terms and Conditions</a>
+                </div>
+                <div>
+                    <h4>Account</h4>
+                    <a asp-area="Identity" asp-page="/Account/Login">Login</a>
+                    <a asp-area="Identity" asp-page="/Account/Register">Register</a>
+                </div>
+            </div>
+            <div class="container footer-bottom">
+                <span>© @DateTime.Now.Year SmartCubeMobile. All rights reserved.</span>
+                <span>Built for clarity. Designed for confidence.</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

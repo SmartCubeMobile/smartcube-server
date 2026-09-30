@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>SmartCube Support</title>
+<style>
+:root{--bg:#0A0F1E;--card:#131B2E;--card2:#1A2332;--border:#1E2D4A;--text:#F1F5F9;--muted:#94A3B8;--dim:#64748B;--blue:#3B82F6;--cyan:#06B6D4;--green:#22C55E;--amber:#F59E0B;--red:#EF4444;--purple:#8B5CF6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 "Segoe UI",system-ui,sans-serif}
+a{color:#60A5FA}
+header{display:flex;align-items:center;gap:16px;padding:14px 24px;border-bottom:1px solid var(--border);background:#0D1322;position:sticky;top:0;z-index:5}
+header h1{font-size:18px;margin:0;font-weight:700}
+header .sp{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;background:var(--card2);border:1px solid var(--border);color:var(--muted)}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--dim);display:inline-block}
+.pill.ok i{background:var(--green)}.pill.warn i{background:var(--amber)}.pill.bad i{background:var(--red)}
+main{padding:20px 24px;max-width:1500px;margin:0 auto}
+h2{font-size:15px;margin:26px 0 10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+h2.collapsible{cursor:pointer;user-select:none;border-bottom:1px solid var(--border);padding-bottom:6px}
+h2.collapsible:hover{color:var(--text)}
+h2.collapsible:focus-visible{outline:2px solid #3B82F6;outline-offset:3px;border-radius:4px}
+h2 .chev{display:inline-block;width:16px;transition:transform .15s}
+h2.collapsed .chev{transform:rotate(-90deg)}
+.sec-hidden{display:none!important}
+.sec-tools{justify-content:flex-end;margin:10px 0 -10px}
+.sec-tools button{padding:4px 10px;font-size:12px}
+a.rel-dl{color:#60A5FA;text-decoration:none;border-bottom:1px dashed #60A5FA66}
+a.rel-dl:hover{border-bottom-style:solid}
+@media (prefers-reduced-motion: reduce){h2 .chev{transition:none}}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+.card .l{font-size:12px;color:var(--muted)}
+.card .v{font-size:26px;font-weight:700;margin:4px 0 2px}
+.card .s{font-size:11px;color:var(--dim)}
+.card.blue .v{color:var(--blue)}.card.green .v{color:var(--green)}.card.cyan .v{color:var(--cyan)}.card.amber .v{color:var(--amber)}.card.red .v{color:var(--red)}.card.purple .v{color:var(--purple)}
+.bar{display:flex;gap:10px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+input,select{background:#0A0F1E;border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 12px;font:inherit}
+input:focus,select:focus{outline:none;border-color:var(--blue)}
+button{background:var(--blue);color:#fff;border:0;border-radius:9px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}
+button.sec{background:var(--card2);color:var(--muted);border:1px solid var(--border)}
+button.warn{background:#3B2E1A;color:var(--amber)}button.danger{background:#3B1A1A;color:var(--red)}button.good{background:#0A3D2E;color:#34D399}
+button:disabled{opacity:.5;cursor:default}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;background:#0F1729}
+tr:last-child td{border-bottom:0}
+tbody tr.row{cursor:pointer}tbody tr.row:hover{background:#182238}
+.tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:var(--card2);color:var(--muted)}
+.tag.pro{background:#2E1A5F;color:#C4B5FD}.tag.basic{background:#1E3A5F;color:#93C5FD}.tag.free{color:var(--dim)}
+.tag.ok{background:#0A3D2E;color:#34D399}.tag.bad{background:#3B1A1A;color:#FCA5A5}.tag.admin{background:#3B2E1A;color:#FCD34D}
+.tag.st-open{background:#3B1A1A;color:#FCA5A5}.tag.st-inprogress{background:#1E3A5F;color:#93C5FD}.tag.st-waitingoncustomer{background:#3B2E1A;color:#FCD34D}.tag.st-resolved,.tag.st-closed{background:#0A3D2E;color:#34D399}
+.tag.area{background:#1F2937;color:#E5E7EB;font-weight:500}
+tr.sel{background:#182238}
+.tk-msg{white-space:pre-wrap;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin:8px 0;line-height:1.5}
+.tk-msg.staff{background:#0F2A22;border-color:#14532D}
+.tk-meta{font-size:11px;color:var(--dim)}
+.lc-wrap{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:12px}
+@media (max-width:760px){.lc-wrap{grid-template-columns:1fr}}
+.lc-list{border:1px solid var(--border);border-radius:12px;background:var(--card);max-height:520px;overflow:auto}
+.lc-item{padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer}
+.lc-item:hover,.lc-item.sel{background:#182238}
+.lc-item .who{display:flex;gap:6px;align-items:center}
+.lc-item .dot{width:8px;height:8px;border-radius:50%;background:var(--dim);flex-shrink:0}
+.lc-item .dot.on{background:#22C55E}
+.lc-item .last{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.lc-item .unread{background:#2563EB;color:#fff;border-radius:999px;font-size:11px;padding:0 7px;margin-left:auto}
+.lc-console{border:1px solid var(--border);border-radius:12px;background:var(--card);padding:12px;display:flex;flex-direction:column}
+.lc-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.lc-log{height:380px;overflow-y:auto;background:#0A0F1E;border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.lc-msg{max-width:80%;padding:8px 11px;border-radius:10px;white-space:pre-wrap;word-wrap:break-word;line-height:1.45}
+.lc-msg.cust{align-self:flex-start;background:var(--card2);border:1px solid var(--border)}
+.lc-msg.staff{align-self:flex-end;background:#0F2A22;border:1px solid #14532D}
+.lc-msg .m{display:block;font-size:11px;color:var(--dim);margin-bottom:2px}
+.lc-msg.sys{align-self:center;background:none;border:0;color:var(--dim);font-size:12px}
+#lc-input{flex:1;min-height:52px;background:#0A0F1E;border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 12px;font:inherit;resize:vertical}
+#tk-reply{width:100%;min-height:110px;background:#0A0F1E;border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 12px;font:inherit;resize:vertical}
+.mono{font-family:Consolas,monospace;font-size:12px}
+.muted{color:var(--muted)}.dim{color:var(--dim)}
+#detail{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:#0D1322;border-left:1px solid var(--border);padding:20px 22px;overflow:auto;transform:translateX(100%);transition:transform .2s;z-index:10}
+#detail.open{transform:none}
+#detail h3{margin:0 0 4px;font-size:18px}
+.kv{display:grid;grid-template-columns:130px 1fr;gap:4px 10px;font-size:13px;margin:12px 0}
+.kv b{color:var(--muted);font-weight:500}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.note{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;margin:10px 0}
+.note.good{border-color:#14532D;color:#86EFAC}.note.bad{border-color:#7F1D1D;color:#FCA5A5}
+#login{max-width:380px;margin:80px auto;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px}
+#login h2{margin:0 0 4px;text-transform:none;letter-spacing:0;color:var(--text);font-size:20px}
+#login input{width:100%;margin:8px 0}
+#login button{width:100%;margin-top:8px}
+.hidden{display:none!important}
+.note-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.note-card .head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.note-card .head b{font-size:14px}
+.note-card .body{white-space:pre-wrap;color:var(--muted);font-size:13px;margin:8px 0 6px}
+.note-card .meta{font-size:11px;color:var(--dim)}
+.note-card .body .ins{background:#FACC1526;color:#FDE047;border-radius:3px;padding:0 2px}
+.note-card.editing,.card.editing{outline:2px solid #FACC15;outline-offset:2px}
+.note-card .tools{display:flex;gap:6px;margin-left:auto;align-items:center}
+.note-card select{padding:4px 8px;font-size:12px}
+.note-card button{padding:4px 10px;font-size:12px}
+.tag.bug{background:#3B1A1A;color:#FCA5A5}.tag.suggestion{background:#1E3A5F;color:#93C5FD}.tag.fix{background:#0A3D2E;color:#34D399}.tag.task{background:#2E1065;color:#C4B5FD}.tag.website{background:#3B2A0A;color:#FBBF24}.tag.note{background:var(--card2);color:var(--muted)}
+.tag.urgent{background:#7F1D1D;color:#FECACA}.tag.high{background:#3B2E1A;color:#FCD34D}.tag.low{color:var(--dim)}
+.tag.done{background:#0A3D2E;color:#34D399}.tag.inprogress{background:#1E3A5F;color:#93C5FD}
+.rel-current{color:var(--green);font-weight:700}
+.scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>SmartCube Support</h1>
+  <span id="who" class="dim"></span>
+  <span class="sp"></span>
+  <span id="h-db" class="pill"><i></i>Database</span>
+  <span id="h-tunnel" class="pill"><i></i>Tunnel</span>
+  <span id="h-claude" class="pill"><i></i>Claude</span>
+  <button class="sec" id="refresh">Refresh</button>
+  <button class="sec hidden" id="logout">Sign out</button>
+</header>
+
+<section id="login" class="hidden">
+  <h2>Sign in</h2>
+  <p class="muted" style="margin:0 0 10px">Administrator accounts only.</p>
+  <input id="l-user" placeholder="Username or email" autocomplete="username">
+  <input id="l-pass" type="password" placeholder="Password" autocomplete="current-password">
+  <div id="l-code-wrap" class="hidden">
+    <p class="muted" style="margin:10px 0 0;font-size:13px">Two-factor is on for this account. Enter the 6-digit code from your authenticator app, or a recovery code.</p>
+    <input id="l-code" inputmode="numeric" autocomplete="one-time-code" maxlength="20" placeholder="6-digit code" style="letter-spacing:.2em;font-size:18px;text-align:center">
+  </div>
+  <button id="l-go">Sign in</button>
+  <p id="l-msg" class="muted"></p>
+</section>
+
+<main id="app" class="hidden">
+  <h2>Overview</h2>
+  <div class="cards" id="cards"></div>
+
+  <h2>Live chats</h2>
+  <div class="bar">
+    <span id="lc-conn" class="tag">Connecting…</span>
+    <button class="sec" id="lc-alerts" title="Allow desktop notifications and a sound when a customer joins or writes">Enable alerts</button>
+    <span id="lc-summary" class="dim"></span>
+  </div>
+  <div class="lc-wrap">
+    <div id="lc-list" class="lc-list"><p class="dim" style="padding:10px">No live chats. Offer one from a ticket reply below.</p></div>
+    <div id="lc-console" class="lc-console hidden">
+      <div class="lc-head"><b id="lc-title"></b><span id="lc-cust" class="tag"></span>
+        <select id="lc-status" style="margin-left:auto"><option>Open</option><option>In progress</option><option>Waiting on customer</option><option>Resolved</option><option>Closed</option></select>
+        <button class="sec" id="lc-close">Close</button></div>
+      <div id="lc-log" class="lc-log"></div>
+      <div id="lc-typing" class="tk-meta" style="height:16px;margin:4px 2px"></div>
+      <div style="display:flex;gap:8px"><textarea id="lc-input" placeholder="Type a reply. Enter to send, Shift+Enter for a new line."></textarea><button id="lc-send">Send</button></div>
+      <div class="tk-meta" id="lc-hint" style="margin-top:4px"></div>
+    </div>
+  </div>
+
+  <h2>Support tickets</h2>
+  <div class="bar">
+    <select id="tf-status"><option value="Active" selected>Active (not resolved)</option><option>All</option><option>Open</option><option>In progress</option><option>Waiting on customer</option><option>Resolved</option><option>Closed</option></select>
+    <select id="tf-area"><option>All</option></select>
+    <span id="t-summary" class="dim"></span>
+  </div>
+  <div class="scroll"><table id="tickets"><thead><tr><th>Ticket</th><th>Opened</th><th>Customer</th><th>Area</th><th>Subject</th><th>Status</th><th>Last update</th></tr></thead><tbody></tbody></table></div>
+  <div id="ticket-view" class="card hidden" style="margin-top:12px"></div>
+
+  <h2>Releases</h2>
+  <div class="bar"><span id="rel-summary" class="dim"></span></div>
+  <div class="scroll"><table id="releases"><thead><tr><th>Version</th><th>Released</th><th>Installer</th><th>Source code</th><th>Downloads</th><th>Users on it</th><th>Notes</th></tr></thead><tbody></tbody></table></div>
+  <div class="note" style="font-size:12px;line-height:1.6"><b>Developer source code.</b> Each release's <i>Source</i> zip is the app exactly as released, ready for Visual Studio 2022: unzip it outside OneDrive, open <span class="mono">SmartCubeMobile.sln</span>, pick <i>Windows Machine</i> and press F5. It needs the ".NET Multi-platform App UI development" workload; full steps are in <span class="mono">README-DEVELOPER.txt</span> inside the zip. Keep the zips private: they contain live service keys.</div>
+
+  <h2>Energy tariff data</h2>
+  <div class="bar"><span id="tariff-summary" class="dim"></span></div>
+  <div class="scroll"><table id="tariff-regions"><thead><tr><th>Region</th><th>Sample postcode</th><th>Dual fuel</th><th>Electricity only</th><th>Gas only</th><th>Assumed usage</th><th>Learned postcodes</th></tr></thead><tbody></tbody></table></div>
+  <div class="note" style="font-size:12px;line-height:1.6">
+    <b>How the tariff data works.</b> SmartCubeTariffs.exe (D:\SmartCubeMobile\SmartCubeTariffs) drives energylinx.co.uk once per region and uploads the results here. Three passes are needed because EnergyLinx offers a different list of tariffs for each journey, although the unit rates are identical where a tariff appears in more than one list: dual fuel (about 108 tariffs per region), electricity only (about 106) and gas only (about 61).
+    The app shows dual fuel by default, electricity only when the user has no gas bills or gas supplier, and the user can switch between all three on the tariff page.<br>
+    <b>To refresh everything:</b> <code>SmartCubeTariffs.exe --auto --fuel all</code> (about 20 minutes, unattended). One fuel: <code>--fuel dual</code>, <code>--fuel elec</code> or <code>--fuel gas</code>; one region: add <code>--region 16</code>. The exe's radio buttons do the same by hand.<br>
+    <b>Notes:</b> each region's sample address is in D:\SmartCubeMobile\Data\Tarrifs\regions.json and must be one EnergyLinx already knows (a house on an established street); an unknown address makes the site demand meter numbers and the pass fails. "Assumed usage" is whatever EnergyLinx last had for the sample address and only affects its own headline cost column; the app prices every tariff from unit rates and standing charges with the user's own kWh.
+  </div>
+
+  <h2>Users</h2>
+  <div class="bar">
+    <input id="q" placeholder="Search username or email" style="min-width:280px">
+    <span id="ucount" class="dim"></span>
+  </div>
+  <div class="scroll"><table id="users"><thead><tr>
+    <th>User</th><th>Email</th><th>Plan</th><th>Expires</th><th>Last login</th><th>App</th><th>Devices</th><th>Smart Scan</th><th>Status</th>
+  </tr></thead><tbody></tbody></table></div>
+
+  <h2>Smart Scan activity</h2>
+  <div class="scroll"><table id="scans"><thead><tr><th>When</th><th>User</th><th>Type</th><th>Size</th><th>Result</th></tr></thead><tbody></tbody></table></div>
+
+  <h2>Logins <label class="dim" style="font-weight:400;text-transform:none;letter-spacing:0;margin-left:10px"><input type="checkbox" id="failedOnly" style="vertical-align:middle"> failed only</label></h2>
+  <div class="scroll"><table id="logins"><thead><tr><th>When</th><th>Login</th><th>Method</th><th>Result</th><th>App</th><th>IP</th></tr></thead><tbody></tbody></table></div>
+
+  <h2>Developer notes</h2>
+  <div class="card" style="margin-bottom:12px">
+    <div class="bar" style="margin:0 0 8px">
+      <select id="n-type"><option>Task</option><option>Bug</option><option>Suggestion</option><option>Fix</option><option>Website</option><option>Note</option></select>
+      <select id="n-priority"><option>Low</option><option selected>Normal</option><option>High</option><option>Urgent</option></select>
+      <input id="n-title" placeholder="Title" style="flex:1;min-width:240px">
+      <span id="n-version-hint" class="dim" style="font-size:12px"></span>
+    </div>
+    <textarea id="n-body" placeholder="Details: what happened, how to reproduce, or what you'd like changed and why" rows="3" style="width:100%;background:#0A0F1E;border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 12px;font:inherit;resize:vertical"></textarea>
+    <div class="bar" style="margin:8px 0 0"><button id="n-add">Add note</button><span id="n-msg" class="dim"></span></div>
+  </div>
+  <div class="bar">
+    <select id="nf-status"><option selected>All</option><option>Open</option><option>In progress</option><option>Done</option><option>Won't fix</option></select>
+    <select id="nf-type"><option>All</option><option>Task</option><option>Bug</option><option>Suggestion</option><option>Fix</option><option>Website</option><option>Note</option></select>
+    <span id="n-count" class="dim"></span>
+  </div>
+  <div id="notes"></div>
+
+  <p class="dim" style="margin:30px 0 10px;font-size:12px" id="foot"></p>
+</main>
+
+<aside id="detail"><div id="d-body"></div></aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = d => d ? new Date(d).toLocaleString('en-GB', {day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+const fmtD = d => d ? new Date(d).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) : '—';
+const ago = d => { if(!d) return '—'; const m = (Date.now()-new Date(d))/60000; if(m<1) return 'just now'; if(m<60) return Math.round(m)+' min ago'; if(m<1440) return Math.round(m/60)+' h ago'; return Math.round(m/1440)+' d ago'; };
+
+async function api(path, body) {
+  const r = await fetch(path, body === undefined ? {credentials:'same-origin',cache:'no-store'} : {method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  let j = {}; try { j = await r.json(); } catch {}
+  return {status:r.status, ...j};
+}
+
+function showLogin(msg) { $('#login').classList.remove('hidden'); $('#app').classList.add('hidden'); $('#logout').classList.add('hidden'); $('#l-msg').textContent = msg || ''; }
+
+$('#l-go').onclick = async () => {
+  const codeShown = !$('#l-code-wrap').classList.contains('hidden');
+  const code = codeShown ? $('#l-code').value.replace(/\s/g, '') : '';
+  if (codeShown && !code) { $('#l-msg').textContent = 'Enter the code from your authenticator app.'; $('#l-code').focus(); return; }
+  $('#l-msg').textContent = 'Signing in…';
+  const r = await api('/api/account/login', {login:$('#l-user').value.trim(), password:$('#l-pass').value, remember:true, code: code || null});
+  if (!r.ok) {
+    if (r.twoFactorRequired) {
+      // Password was right; now ask for the authenticator code (keep what was typed).
+      $('#l-code-wrap').classList.remove('hidden');
+      $('#l-code').value = '';
+      $('#l-msg').textContent = codeShown ? (r.error || 'That code is not right.') : '';
+      $('#l-code').focus();
+      return;
+    }
+    $('#l-msg').textContent = r.error || 'Login failed';
+    $('#l-code-wrap').classList.add('hidden');
+    return;
+  }
+  $('#l-pass').value = ''; $('#l-code').value = ''; $('#l-code-wrap').classList.add('hidden');
+  load();
+};
+$('#l-pass').addEventListener('keydown', e => { if (e.key === 'Enter') $('#l-go').click(); });
+$('#l-code').addEventListener('keydown', e => { if (e.key === 'Enter') $('#l-go').click(); });
+$('#logout').onclick = async () => { await api('/api/account/logout', {}); showLogin('Signed out.'); };
+$('#refresh').onclick = async () => {
+  const b = $('#refresh'); b.disabled = true; b.textContent = 'Refreshing…';
+  try { await load(); } finally {
+    b.textContent = 'Updated ' + new Date().toLocaleTimeString('en-GB');
+    setTimeout(() => { b.textContent = 'Refresh'; b.disabled = false; }, 2500);
+  }
+};
+$('#q').addEventListener('input', () => { clearTimeout(window._qt); window._qt = setTimeout(loadUsers, 250); });
+$('#failedOnly').addEventListener('change', loadLogins);
+
+function pill(id, state, text) { const p = $(id); p.className = 'pill ' + state; p.lastChild.textContent = text; p.title = text; }
+
+async function load() {
+  const o = await api('/api/admin/overview');
+  if (o.status === 401) return showLogin();
+  if (o.status === 403) return showLogin('That account is not an administrator.');
+  if (!o.ok) return showLogin(o.error || 'Server error');
+  $('#login').classList.add('hidden'); $('#app').classList.remove('hidden'); $('#logout').classList.remove('hidden');
+
+  const me = await api('/api/account/me'); $('#who').textContent = me.ok ? 'signed in as ' + me.username : '';
+
+  const c = [
+    ['Total users', o.users.total, o.users.newLast7d + ' new in 7 days', 'blue'],
+    ['Active (7 d)', o.users.activeLast7d, o.users.activeLast30d + ' in 30 days', 'green'],
+    ['Subscribers', o.users.subscribers, 'Pro ' + o.plans.pro + ' · Basic ' + o.plans.basic + ' · Free ' + o.plans.free, 'purple'],
+    ['Scans this month', o.scans.thisMonth, o.scans.thisMonthOk + ' ok · ~£' + o.scans.estimatedCostGbp.toFixed(2), 'cyan'],
+    ['Scans today', o.scans.today, o.scans.failedLast7d + ' failed in 7 days', o.scans.failedLast7d ? 'amber' : 'cyan'],
+    ['Downloads', o.downloads.total, o.downloads.last7d + ' in 7 days', 'blue'],
+    ['Failed logins (24 h)', o.logins.failedLast24h, o.users.locked + ' locked accounts', o.logins.failedLast24h > 10 ? 'red' : 'amber'],
+    ['Installer', o.installer ? 'v' + o.installer.version : '—', o.installer ? o.installer.sizeMb + ' MB · ' + fmtD(o.installer.updated) : 'none uploaded', 'green'],
+  ];
+  $('#cards').innerHTML = c.map(([l,v,s,k]) => `<div class="card ${k}"><div class="l">${esc(l)}</div><div class="v">${esc(v)}</div><div class="s">${esc(s)}</div></div>`).join('');
+  $('#foot').textContent = 'Server time ' + fmt(o.serverTimeUtc) + ' (all times shown in your local time zone)';
+
+  await Promise.all([loadHealth(), loadTickets(), loadReleases(), loadTariffs(), loadUsers(), loadScans(), loadLogins(), loadNotes()]);
+  $('#foot').textContent += ' · last refreshed ' + new Date().toLocaleTimeString('en-GB');
+  initChat();
+}
+
+// ---------------- Support tickets ----------------
+let OPEN_TICKET = null;
+const stCls = s => 'st-' + String(s || '').toLowerCase().replace(/[^a-z]/g, '');
+async function loadTickets() {
+  const r = await api('/api/admin/tickets?status=' + encodeURIComponent($('#tf-status').value) + '&area=' + encodeURIComponent($('#tf-area').value));
+  if (!r.ok) return;
+  const areaSel = $('#tf-area');
+  if (areaSel.options.length === 1) r.areas.forEach(a => { const o = document.createElement('option'); o.textContent = a; areaSel.appendChild(o); });
+  const c = r.counts || {};
+  const active = (c['Open'] || 0) + (c['In progress'] || 0) + (c['Waiting on customer'] || 0);
+  const byArea = Object.entries(r.openByArea || {}).sort((a, b) => b[1] - a[1]).map(([a, n]) => a + ' ' + n).join(', ');
+  $('#t-summary').textContent = active + ' active (' + (c['Open'] || 0) + ' open, ' + (c['In progress'] || 0) + ' in progress, ' + (c['Waiting on customer'] || 0) + ' waiting on customer)'
+    + (byArea ? ' · by area: ' + byArea : '') + ' · ' + ((c['Resolved'] || 0) + (c['Closed'] || 0)) + ' resolved/closed';
+  $('#tickets tbody').innerHTML = r.tickets.length ? r.tickets.map(t => `<tr class="row${OPEN_TICKET === t.id ? ' sel' : ''}" data-id="${t.id}">
+    <td class="mono">${esc(t.reference)}${t.channel === 'chat' ? ' <span class="tag ok" title="Live chat offered">chat</span>' : ''}${t.replies ? ' <span class="dim">· ' + t.replies + ' repl' + (t.replies === 1 ? 'y' : 'ies') + '</span>' : ''}</td>
+    <td title="${esc(fmt(t.createdAt))}">${esc(ago(t.createdAt))}</td>
+    <td>${esc(t.name || '')}<div class="dim" style="font-size:11px">${esc(t.email)}</div></td>
+    <td><span class="tag area">${esc(t.area)}</span></td>
+    <td><b>${esc(t.subject)}</b><div class="dim" style="font-size:11px;max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.preview)}</div></td>
+    <td><span class="tag ${stCls(t.status)}">${esc(t.status)}</span></td>
+    <td class="dim">${t.updatedAt ? esc(ago(t.updatedAt)) + (t.updatedBy ? ' · ' + esc(t.updatedBy) : '') : '—'}</td></tr>`).join('')
+    : '<tr><td colspan="7" class="dim">No tickets match this filter.</td></tr>';
+  document.querySelectorAll('#tickets tbody tr.row').forEach(tr => tr.onclick = () => openTicket(+tr.dataset.id));
+}
+
+async function openTicket(id) {
+  OPEN_TICKET = id;
+  document.querySelectorAll('#tickets tbody tr.row').forEach(tr => tr.classList.toggle('sel', +tr.dataset.id === id));
+  const v = $('#ticket-view'); v.classList.remove('hidden'); v.innerHTML = '<p class="dim">Loading…</p>';
+  const r = await api('/api/admin/tickets/' + id);
+  if (!r.ok) { v.innerHTML = `<div class="note bad">${esc(r.error || 'Could not load the ticket.')}</div>`; return; }
+  const t = r.ticket;
+  const STATUSES = ['Open', 'In progress', 'Waiting on customer', 'Resolved', 'Closed'];
+  v.innerHTML = `
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <b style="font-size:16px">${esc(t.reference)} · ${esc(t.subject)}</b>
+      <span class="tag area">${esc(t.area)}</span><span class="tag ${stCls(t.status)}">${esc(t.status)}</span>
+      <button class="sec" id="tk-close" style="margin-left:auto">Close</button>
+    </div>
+    <div class="tk-meta" style="margin-top:4px">From ${esc(t.name || '')} &lt;${esc(t.email)}&gt;${t.username ? ' · account <a href="#" id="tk-user">' + esc(t.username) + '</a>' : ''} · opened ${esc(fmt(t.createdAt))}${t.appVersion ? ' · app v' + esc(t.appVersion) : ''}</div>
+    <div class="tk-msg">${esc(t.message)}</div>
+    ${r.replies.map(x => `<div class="tk-msg ${x.isStaff ? 'staff' : ''}"><div class="tk-meta">${x.isStaff ? 'Reply from ' : ''}${esc(x.author)} · ${esc(fmt(x.createdAt))}${x.isStaff ? (x.emailed ? ' · emailed to customer' : ' · <span style="color:var(--red)">email not sent</span>') : ''}</div>${esc(x.message)}</div>`).join('')}
+    <textarea id="tk-reply" placeholder="Write a reply. It is emailed to ${esc(t.email)} from the support mailbox and kept on the ticket."></textarea>
+    <div class="bar" style="margin:8px 0 0">
+      <label class="dim" title="Adds a Start live chat button to the email. Send it when you are free to chat: the customer will expect you to be there."><input type="checkbox" id="tk-offer" ${t.channel === 'chat' ? '' : 'checked'} style="vertical-align:middle"> Offer live chat in this email</label>
+      <label class="dim">Status <select id="tk-status">${STATUSES.map(s => `<option ${s === t.status ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select></label>
+      <button id="tk-send">Send reply &amp; save</button>
+      <button class="good" id="tk-invite" title="Email a standard 'let's sort this out in a live chat' message with the chat button, then open the chat console">Invite to live chat</button>
+      <button class="sec" id="tk-save">Save status only</button>
+      ${t.channel === 'chat' ? '<button class="sec" id="tk-openchat">Open live chat</button>' : ''}
+      <span id="tk-msg" class="dim"></span>
+    </div>`;
+  $('#tk-close').onclick = () => { v.classList.add('hidden'); OPEN_TICKET = null; document.querySelectorAll('#tickets tr.sel').forEach(x => x.classList.remove('sel')); };
+  if ($('#tk-user')) $('#tk-user').onclick = e => { e.preventDefault(); openUser(t.userId); };
+  const save = async (withReply, invite) => {
+    const reply = withReply ? $('#tk-reply').value.trim() : '';
+    const offerChat = invite || (withReply && $('#tk-offer').checked);
+    if (withReply && !reply && !invite) { $('#tk-msg').textContent = 'Write a reply first, or use Save status only.'; return; }
+    // Replying usually means the ball is in the customer's court; offering a chat means we're working on it.
+    let status = $('#tk-status').value;
+    if (withReply && status === 'Open') status = offerChat ? 'In progress' : 'Waiting on customer';
+    ['#tk-send', '#tk-save', '#tk-invite'].forEach(b => $(b).disabled = true); $('#tk-msg').textContent = 'Saving…';
+    const x = await api('/api/admin/tickets/' + id, {status, reply, offerChat});
+    ['#tk-send', '#tk-save', '#tk-invite'].forEach(b => $(b).disabled = false);
+    if (!x.ok) { $('#tk-msg').textContent = x.error || 'Failed'; return; }
+    $('#tk-msg').textContent = x.replied ? (x.emailed ? (x.chatOffered ? 'Emailed with a Start live chat button. The chat is open below.' : 'Reply emailed to the customer.') : 'Reply saved, but the email failed: ' + (x.emailError || 'unknown error')) : 'Status saved.';
+    await loadTickets(); await openTicket(id);
+    if (x.chatOffered) { await refreshChats(); openChat(id); }
+  };
+  $('#tk-send').onclick = () => save(true, false);
+  $('#tk-invite').onclick = () => { if (confirm('Email ' + t.email + ' an invitation to a live chat now? Only do this when you are free to chat.')) save(true, true); };
+  $('#tk-save').onclick = () => save(false, false);
+  if ($('#tk-openchat')) $('#tk-openchat').onclick = async () => { await refreshChats(); openChat(id); };
+}
+$('#tf-status').onchange = loadTickets; $('#tf-area').onchange = loadTickets;
+
+// ---------------- Live chat console ----------------
+let HUB = null, CHATS = [], CHAT_ID = null, UNREAD = {}, lcTypingTimer = null, lcLastTyping = 0, baseTitle = document.title, flashTimer = null;
+function beep() {
+  try { const a = new (window.AudioContext || window.webkitAudioContext)(); const o = a.createOscillator(), g = a.createGain();
+    o.connect(g); g.connect(a.destination); o.frequency.value = 880; g.gain.setValueAtTime(0.15, a.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.35); o.start(); o.stop(a.currentTime + 0.35); } catch (e) {}
+}
+function alertStaff(title, body) {
+  beep();
+  if (document.hidden) {
+    clearInterval(flashTimer); let on = false;
+    flashTimer = setInterval(() => { document.title = (on = !on) ? '● ' + title : baseTitle; }, 900);
+  }
+  try { if (window.Notification && Notification.permission === 'granted') new Notification(title, {body}); } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { clearInterval(flashTimer); document.title = baseTitle; } });
+$('#lc-alerts').onclick = async () => {
+  if (!window.Notification) { $('#lc-alerts').textContent = 'Alerts not supported'; return; }
+  const p = await Notification.requestPermission(); beep();
+  $('#lc-alerts').textContent = p === 'granted' ? 'Alerts on' : 'Alerts blocked';
+};
+if (window.Notification && Notification.permission === 'granted') $('#lc-alerts').textContent = 'Alerts on';
+
+function lcConn(state) {
+  const el = $('#lc-conn');
+  el.className = 'tag ' + (state === 'on' ? 'ok' : state === 'off' ? 'bad' : '');
+  el.textContent = state === 'on' ? 'Connected: customers see you when you open their chat' : state === 'off' ? 'Chat disconnected' : 'Connecting…';
+}
+function renderChats() {
+  const waiting = CHATS.filter(c => c.customerConnected).length;
+  $('#lc-summary').textContent = CHATS.length ? CHATS.length + ' chat' + (CHATS.length === 1 ? '' : 's') + ' offered · ' + waiting + ' customer' + (waiting === 1 ? '' : 's') + ' in chat now' : '';
+  $('#lc-list').innerHTML = CHATS.length ? CHATS.map(c => `<div class="lc-item${c.id === CHAT_ID ? ' sel' : ''}" data-id="${c.id}">
+      <div class="who"><span class="dot ${c.customerConnected ? 'on' : ''}" title="${c.customerConnected ? 'Customer is in the chat' : 'Customer not in the chat'}"></span><b>${esc(c.name || c.email)}</b>${UNREAD[c.id] ? '<span class="unread">' + UNREAD[c.id] + '</span>' : ''}</div>
+      <div class="tk-meta">${esc(c.reference)} · <span class="tag area">${esc(c.area)}</span> · ${esc(c.status)}</div>
+      <div class="last">${c.lastFromStaff ? 'You: ' : ''}${esc(c.lastMessage || c.subject)}</div></div>`).join('')
+    : '<p class="dim" style="padding:10px">No live chats. Offer one from a ticket reply below.</p>';
+  document.querySelectorAll('.lc-item').forEach(el => el.onclick = () => openChat(+el.dataset.id));
+}
+function lcAdd(m) {
+  const el = document.createElement('div');
+  if (m.sys) { el.className = 'lc-msg sys'; el.textContent = m.message; }
+  else { el.className = 'lc-msg ' + (m.isStaff ? 'staff' : 'cust'); el.innerHTML = '<span class="m">' + esc(m.isStaff ? (m.staffName || m.author) : m.author) + ' · ' + esc(fmt(m.createdAt)) + '</span>' + esc(m.message); }
+  $('#lc-log').appendChild(el); $('#lc-log').scrollTop = $('#lc-log').scrollHeight;
+}
+function lcHint(c) {
+  $('#lc-cust').className = 'tag ' + (c && c.customerConnected ? 'ok' : '');
+  $('#lc-cust').textContent = c && c.customerConnected ? 'Customer in chat' : 'Customer not in chat';
+  $('#lc-hint').textContent = c && c.customerConnected ? 'Messages appear on their screen straight away.' : 'They are not in the chat, so each message is also emailed to them with the Start live chat button.';
+}
+async function refreshChats() { if (!HUB) return; try { const r = await hubCall('JoinStaff'); CHATS = r.chats; renderChats(); } catch (e) {} }
+async function openChat(id) {
+  if (!HUB) return;
+  if (CHAT_ID && CHAT_ID !== id) { try { await hubCall('UnwatchChat', CHAT_ID); } catch (e) {} }
+  CHAT_ID = id; UNREAD[id] = 0; renderChats();
+  const r = await hubCall('WatchChat', id);
+  $('#lc-console').classList.remove('hidden');
+  $('#lc-title').textContent = r.ticket.reference + ' · ' + r.ticket.subject;
+  $('#lc-status').value = r.ticket.status;
+  $('#lc-log').innerHTML = ''; r.messages.forEach(lcAdd); lcHint(r.ticket);
+  const hd = [...document.querySelectorAll('#app > h2')].find(h => h.textContent.includes('Live chats'));
+  if (hd && hd.classList.contains('collapsed')) hd.click();
+  $('#lc-input').focus();
+}
+async function lcSend() {
+  const box = $('#lc-input'); const text = box.value.trim(); if (!text || !CHAT_ID) return;
+  $('#lc-send').disabled = true;
+  try { const r = await hubCall('SendStaffMessage', CHAT_ID, text); box.value = ''; if (r && r.emailed) lcAdd({sys: true, message: 'Customer not in the chat: this message was also emailed.'}); }
+  catch (e) { lcAdd({sys: true, message: 'Not sent: ' + (e.message || e)}); }
+  $('#lc-send').disabled = false; box.focus();
+}
+$('#lc-send').onclick = lcSend;
+$('#lc-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); lcSend(); return; }
+  const now = Date.now(); if (CHAT_ID && now - lcLastTyping > 2500) { lcLastTyping = now; hubCall('Typing', CHAT_ID).catch(() => {}); }
+});
+$('#lc-close').onclick = async () => { if (CHAT_ID) { try { await hubCall('UnwatchChat', CHAT_ID); } catch (e) {} } CHAT_ID = null; $('#lc-console').classList.add('hidden'); renderChats(); };
+$('#lc-status').onchange = async () => { if (!CHAT_ID) return; await hubCall('SetChatStatus', CHAT_ID, $('#lc-status').value); lcAdd({sys: true, message: 'Status set to ' + $('#lc-status').value + '.'}); loadTickets(); };
+
+// Calls the hub; if the server has forgotten this connection (e.g. after a restart), reconnect and retry once.
+const hubStale = e => /No Connection with that ID|not in the 'Connected' State|WebSocket closed|connection was stopped/i.test(String(e && e.message || e));
+let hubRestarting = null, hubStopping = false, hubRetry = 0;
+async function hubRestart() {
+  if (hubRestarting) return hubRestarting;
+  hubRestarting = (async () => { hubStopping = true; try { await HUB.stop(); } catch (e) {} finally { hubStopping = false; } lcConn('connecting'); await HUB.start(); lcConn('on'); const r = await HUB.invoke('JoinStaff'); CHATS = r.chats; renderChats(); if (CHAT_ID) { const w = await HUB.invoke('WatchChat', CHAT_ID); $('#lc-log').innerHTML = ''; w.messages.forEach(lcAdd); lcHint(w.ticket); } })();
+  try { await hubRestarting; } finally { hubRestarting = null; }
+}
+async function hubCall(method, ...args) {
+  try { return await HUB.invoke(method, ...args); }
+  catch (e) { if (!hubStale(e)) throw e; await hubRestart(); return await HUB.invoke(method, ...args); }
+}
+
+function initChat() {
+  if (HUB || !window.signalR) { if (!window.signalR) lcConn('off'); return; }
+  HUB = new signalR.HubConnectionBuilder().withUrl('/api/support/hub').withAutomaticReconnect([0, 2000, 5000, 10000, 30000]).build();
+  HUB.on('ChatStarted', c => {
+    const i = CHATS.findIndex(x => x.id === c.id);
+    if (i >= 0) CHATS[i] = {...CHATS[i], ...c}; else CHATS.unshift({...c, lastMessage: c.subject});
+    renderChats(); alertStaff('Customer joined live chat', (c.name || c.email) + ': ' + c.subject);
+    if (CHAT_ID === c.id) lcHint({customerConnected: true});
+  });
+  HUB.on('ChatUpdated', u => {
+    const c = CHATS.find(x => x.id === u.id); if (!c) { refreshChats(); return; }
+    Object.assign(c, Object.fromEntries(Object.entries(u).filter(([k, v]) => v !== undefined && v !== null && k !== 'new')));
+    if (u.new && CHAT_ID !== u.id) { UNREAD[u.id] = (UNREAD[u.id] || 0) + 1; alertStaff('New chat message', (c.name || c.email) + ': ' + (u.lastMessage || '')); }
+    else if (u.new && document.hidden) alertStaff('New chat message', (c.name || c.email) + ': ' + (u.lastMessage || ''));
+    if (u.status && (u.status === 'Resolved' || u.status === 'Closed')) CHATS = CHATS.filter(x => x.id !== u.id || x.id === CHAT_ID);
+    renderChats(); if (CHAT_ID === u.id && u.customerConnected !== undefined) lcHint(c);
+  });
+  HUB.on('TicketUpdated', u => {
+    loadTickets();
+    alertStaff(u.kind === 'new' ? 'New support ticket ' + u.reference : 'Customer replied on ' + u.reference, (u.who || '') + ': ' + (u.text || ''));
+    if (OPEN_TICKET === u.id) openTicket(u.id);
+  });
+  HUB.on('Message', m => { if (m.ticketId === CHAT_ID) { $('#lc-typing').textContent = ''; lcAdd(m); } });
+  HUB.on('Typing', t => { if (t.ticketId !== CHAT_ID || t.isStaff) return; $('#lc-typing').textContent = 'Customer is typing…'; clearTimeout(lcTypingTimer); lcTypingTimer = setTimeout(() => $('#lc-typing').textContent = '', 4000); });
+  HUB.on('Presence', p => { if (p.ticketId !== CHAT_ID) return; const c = CHATS.find(x => x.id === CHAT_ID); if (c) { c.customerConnected = p.customerHere; lcHint(c); renderChats(); } });
+  HUB.onreconnecting(() => lcConn('connecting'));
+  HUB.onreconnected(async () => { lcConn('on'); await refreshChats(); if (CHAT_ID) openChat(CHAT_ID); });
+  HUB.onclose(() => {
+    lcConn('off');
+    if (hubStopping || hubRestarting) return;            // we closed it ourselves to reconnect
+    const wait = [5, 15, 30, 60][Math.min(hubRetry, 3)] * 1000; hubRetry++;
+    setTimeout(() => { if (!hubRestarting && HUB.state === 'Disconnected') hubRestart().then(() => { hubRetry = 0; }).catch(() => lcConn('off')); }, wait);
+  });
+  HUB.start().then(async () => { lcConn('on'); await refreshChats(); }).catch(() => lcConn('off'));
+}
+
+async function loadReleases() {
+  const r = await api('/api/admin/releases');
+  if (!r.ok) return;
+  const reported = r.adoption.reduce((a, x) => a + x.users, 0);
+  $('#n-version-hint').textContent = r.current ? 'Logged against v' + r.current : '';
+  $('#rel-summary').textContent = (r.current ? 'Current release v' + r.current + ' · ' : '') + reported + ' user' + (reported === 1 ? '' : 's') + ' reporting a version' + (r.adoption.length ? ' (' + r.adoption.map(a => 'v' + a.version + ': ' + a.users).join(', ') + ')' : '');
+  $('#releases tbody').innerHTML = r.releases.length ? r.releases.map(x => `<tr>
+    <td class="${x.version === r.current ? 'rel-current' : ''}">${x.available
+        ? `<a class="rel-dl" href="/api/admin/releases/${encodeURIComponent(x.version)}/download" title="Download the v${esc(x.version)} installer (developer copy, not counted in download stats)">v${esc(x.version)} ⬇</a>`
+        : `<span title="Installer file not found on the server">v${esc(x.version)}</span>`}${x.version === r.current ? ' <span class="tag ok">current</span>' : ''}</td>
+    <td>${esc(fmt(x.releasedAt))}</td>
+    <td class="mono">${esc(x.fileName || '—')}${x.sizeMb ? ' <span class="dim">' + x.sizeMb + ' MB</span>' : ''}</td>
+    <td>${x.sourceMb != null
+        ? `<a class="rel-dl" href="/api/admin/releases/${encodeURIComponent(x.version)}/source" title="Visual Studio 2022 source code for v${esc(x.version)} (zip). Open SmartCubeMobile.sln; setup steps are in README-DEVELOPER.txt. Private: contains live service keys.">Source ⬇</a> <span class="dim">${x.sourceMb} MB</span>`
+        : '<span class="dim">—</span>'}</td>
+    <td>${x.downloads}</td><td>${x.usersOnVersion}</td>
+    <td style="white-space:pre-wrap;max-width:520px">${esc(x.notes || '')}</td></tr>`).join('')
+    : '<tr><td colspan="7" class="dim">No releases recorded</td></tr>';
+}
+
+async function loadTariffs() {
+  const r = await api('/api/tariffs/regions');
+  if (!r.ok) return;
+  const done = r.regions.filter(x => x.tariffCount > 0);
+  const doneElec = r.regions.filter(x => x.elecTariffCount > 0);
+  const doneGas = r.regions.filter(x => x.gasTariffCount > 0);
+  const oldest = done.length ? done.reduce((a, x) => new Date(x.fetchedAt) < new Date(a.fetchedAt) ? x : a) : null;
+  $('#tariff-summary').textContent = 'Dual fuel: ' + done.length + ' of ' + r.regions.length + ' regions · Electricity only: ' + doneElec.length + ' of ' + r.regions.length
+    + ' · Gas only: ' + doneGas.length + ' of ' + r.regions.length
+    + (oldest ? ' · oldest fetch ' + ago(oldest.fetchedAt) : '') + ' · run SmartCubeTariffs.exe (pick the fuel type, or All three) to refresh';
+  // Each fuel cell: "107 tariffs · 3 hours ago" or a red "never"
+  const cell = (n, at) => n > 0 ? `<b>${n}</b> <span class="dim">· ${esc(ago(at))}</span>` : '<span class="tag bad">never</span>';
+  $('#tariff-regions tbody').innerHTML = r.regions.map(x => `<tr>
+    <td>${x.regionId} ${esc(x.name)} <span class="mono dim">${esc(x.gsp)}</span>${x.reportedGsp && x.reportedGsp !== x.gsp ? ' <span class="tag bad" title="EnergyLinx reported a different region for the sample postcode">reports ' + esc(x.reportedGsp) + '</span>' : ''}</td>
+    <td class="mono">${esc(x.postcode || '—')}</td>
+    <td title="${x.fetchedAt ? esc(fmt(x.fetchedAt)) : ''}">${cell(x.tariffCount, x.fetchedAt)}</td>
+    <td title="${x.elecFetchedAt ? esc(fmt(x.elecFetchedAt)) : ''}">${cell(x.elecTariffCount, x.elecFetchedAt)}</td>
+    <td title="${x.gasFetchedAt ? esc(fmt(x.gasFetchedAt)) : ''}">${cell(x.gasTariffCount, x.gasFetchedAt)}</td>
+    <td class="dim">${x.elecKwh ? Math.round(x.elecKwh) + ' kWh elec · ' + Math.round(x.gasKwh || 0) + ' kWh gas' : '—'}</td>
+    <td class="mono dim">${x.learnedOutwards.length ? esc(x.learnedOutwards.join(' ')) : '—'}</td></tr>`).join('');
+}
+
+let NOTE_META = null;
+async function loadNotes() {
+  const r = await api('/api/admin/notes?status=' + encodeURIComponent($('#nf-status').value) + '&type=' + encodeURIComponent($('#nf-type').value));
+  if (!r.ok) return;
+  NOTE_META = r;
+  $('#n-count').textContent = r.notes.length + ' note' + (r.notes.length === 1 ? '' : 's');
+  const cls = s => s.toLowerCase().replace(/[^a-z]/g, '');
+  $('#notes').innerHTML = r.notes.length ? r.notes.map(n => `<div class="note-card" data-id="${n.id}">
+    <div class="head">
+      <span class="tag ${cls(n.type)}">${esc(n.type)}</span>
+      <span class="tag ${cls(n.priority)}">${esc(n.priority)}</span>
+      ${n.status !== 'Open' ? `<span class="tag ${cls(n.status)}">${esc(n.status)}</span>` : ''}
+      <b>${esc(n.title)}</b>
+      ${n.appVersion ? `<span class="mono dim">v${esc(n.appVersion)}</span>` : ''}
+      <span class="tools">
+        <select class="n-status">${r.statuses.map(s => `<option ${s === n.status ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select>
+        <button class="sec n-edit">Edit</button>
+        <button class="danger n-del">Delete</button>
+      </span>
+    </div>
+    ${n.body ? `<div class="body">${diffHtml(n.previousBody, n.body)}</div>` : ''}
+    <div class="meta">Added by ${esc(n.createdBy || '?')} ${esc(fmt(n.createdAt))}${n.updatedAt ? ' · updated by ' + esc(n.updatedBy || '?') + ' ' + esc(fmt(n.updatedAt)) : ''}</div>
+  </div>`).join('') : '<p class="dim">Nothing here.</p>';
+
+  document.querySelectorAll('.note-card').forEach(card => {
+    const id = card.dataset.id;
+    const n = r.notes.find(x => String(x.id) === id);
+    card.querySelector('.n-status').onchange = async e => {
+      const status = e.target.value;
+      const payload = {status};
+      if ((status === 'Done' || status === "Won't fix") && n.status !== status) {
+        const notes = prompt((status === 'Done' ? 'Completion notes' : 'Reason') + ' for "' + n.title + '" (added to the task, shown in yellow):', '');
+        if (notes === null) { e.target.value = n.status; return; }
+        if (notes.trim()) {
+          payload.body = (n.body ? n.body + '\n\n' : '') + (status === 'Done' ? 'Completed' : "Won't fix") + ' ' + new Date().toLocaleDateString('en-GB') + ': ' + notes.trim();
+        }
+      }
+      const x = await api('/api/admin/notes/' + id, payload); if (x.ok) loadNotes(); else alert(x.error || 'Failed');
+    };
+    card.querySelector('.n-del').onclick = async () => { if (!confirm('Delete "' + n.title + '"?')) return; const x = await fetch('/api/admin/notes/' + id, {method:'DELETE', credentials:'same-origin'}); if (x.ok) loadNotes(); };
+    card.querySelector('.n-edit').onclick = () => {
+      $('#n-type').value = n.type; $('#n-priority').value = n.priority; $('#n-title').value = n.title; $('#n-body').value = n.body || '';
+      document.querySelectorAll('.note-card.editing').forEach(c => c.classList.remove('editing'));
+      card.classList.add('editing'); $('#n-title').closest('.note-form, .card, section')?.classList.add('editing');
+      $('#n-add').textContent = 'Save changes'; $('#n-add').dataset.edit = id; $('#n-msg').textContent = 'Editing "' + n.title + '" — ';
+      const cancel = document.createElement('a'); cancel.href = '#'; cancel.textContent = 'cancel'; cancel.onclick = ev => { ev.preventDefault(); resetNoteForm(); };
+      $('#n-msg').appendChild(cancel);
+      $('#n-title').focus();
+      window.scrollTo({top: $('#n-title').getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth'});
+    };
+  });
+}
+
+// Word-level diff: text added since the previous save is wrapped in <span class="ins"> (yellow).
+function diffHtml(prev, cur) {
+  if (prev == null || prev === cur) return esc(cur);
+  const tok = s => s.split(/(\s+)/).filter(t => t.length);
+  const a = tok(prev), b = tok(cur);
+  const n = a.length, m = b.length;
+  if (n * m > 4000000) return esc(cur);
+  const L = Array.from({length: n + 1}, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    L[i][j] = a[i] === b[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  let out = '', i = 0, j = 0, ins = [];
+  const flush = () => { if (ins.length) { out += '<span class="ins">' + esc(ins.join('')) + '</span>'; ins = []; } };
+  while (i < n && j < m) {
+    if (a[i] === b[j]) { flush(); out += esc(b[j]); i++; j++; }
+    else if (L[i + 1][j] >= L[i][j + 1]) i++;          // removed word: not shown
+    else { ins.push(b[j]); j++; }                       // added word
+  }
+  while (j < m) ins.push(b[j++]);
+  flush();
+  return out;
+}
+
+function resetNoteForm() {
+  $('#n-title').value = ''; $('#n-body').value = ''; $('#n-priority').value = 'Normal'; $('#n-type').value = 'Task';
+  $('#n-add').textContent = 'Add note'; delete $('#n-add').dataset.edit; $('#n-msg').textContent = '';
+  document.querySelectorAll('.editing').forEach(c => c.classList.remove('editing'));
+}
+
+$('#n-add').onclick = async () => {
+  const payload = {type:$('#n-type').value, priority:$('#n-priority').value, title:$('#n-title').value, body:$('#n-body').value};
+  if (!payload.title.trim()) { $('#n-msg').textContent = 'Give it a title.'; return; }
+  const editId = $('#n-add').dataset.edit;
+  const x = await api(editId ? '/api/admin/notes/' + editId : '/api/admin/notes', payload);
+  if (!x.ok) { $('#n-msg').textContent = x.error || 'Failed'; return; }
+  resetNoteForm(); loadNotes();
+};
+$('#nf-status').onchange = loadNotes; $('#nf-type').onchange = loadNotes;
+
+async function loadHealth() {
+  const h = await api('/api/admin/health');
+  if (!h.ok) return;
+  pill('#h-db', h.database === 'ok' ? 'ok' : 'bad', 'Database ' + (h.database === 'ok' ? 'ok' : h.database));
+  pill('#h-tunnel', h.tunnel.startsWith('ok') ? 'ok' : 'bad', 'Tunnel ' + h.tunnel);
+  pill('#h-claude', h.claude.startsWith('key valid') && !h.claude.includes('no credit') ? 'ok' : (h.claude.startsWith('key valid') ? 'warn' : 'bad'), 'Claude ' + h.claude);
+}
+
+let USERS = [];
+async function loadUsers() {
+  const r = await api('/api/admin/users?q=' + encodeURIComponent($('#q').value.trim()));
+  if (!r.ok) return;
+  USERS = r.users;
+  $('#ucount').textContent = r.users.length + ' shown';
+  $('#users tbody').innerHTML = r.users.map(u => `<tr class="row" data-id="${esc(u.id)}">
+    <td><b>${esc(u.username)}</b>${u.admin ? ' <span class="tag admin">admin</span>' : ''}<br><span class="dim">${esc(u.fullName || '')}</span></td>
+    <td>${esc(u.email)}</td>
+    <td><span class="tag ${u.plan.toLowerCase()}">${esc(u.plan)}</span></td>
+    <td>${u.subscriber ? fmtD(u.expires) : '<span class="dim">—</span>'}</td>
+    <td title="${esc(fmt(u.lastLogin))}">${esc(ago(u.lastLogin))}</td>
+    <td class="mono">${esc(u.appVersion || '—')}</td>
+    <td>${u.devices}</td>
+    <td>${u.licence ? `<span class="mono">${esc(u.licence.key)}</span><br><span class="dim">${u.licence.used}/${u.licence.limit} used</span>` : '<span class="dim">—</span>'}</td>
+    <td>${u.locked ? '<span class="tag bad">deactivated</span>' : '<span class="tag ok">active</span>'}${u.mustChangePassword ? ' <span class="tag admin" title="Temporary password issued; user must change it at next sign-in">temp pw</span>' : ''}</td>
+  </tr>`).join('');
+  document.querySelectorAll('#users tr.row').forEach(tr => tr.onclick = () => openUser(tr.dataset.id));
+}
+
+async function loadScans() {
+  const r = await api('/api/admin/scans?take=50');
+  if (!r.ok) return;
+  $('#scans tbody').innerHTML = r.scans.length ? r.scans.map(s => `<tr>
+    <td>${esc(fmt(s.scannedAt))}</td><td>${esc(s.email || s.licenceKey)}</td><td>${esc(s.category || '—')}</td>
+    <td>${(s.inputChars/1000).toFixed(1)}k chars</td>
+    <td>${s.success ? '<span class="tag ok">ok</span>' : '<span class="tag bad">failed</span> <span class="dim">' + esc(s.error || '') + '</span>'}</td></tr>`).join('')
+    : '<tr><td colspan="5" class="dim">No scans yet</td></tr>';
+}
+
+async function loadLogins() {
+  const r = await api('/api/admin/logins?take=50&failedOnly=' + $('#failedOnly').checked);
+  if (!r.ok) return;
+  $('#logins tbody').innerHTML = r.logins.length ? r.logins.map(l => `<tr>
+    <td>${esc(fmt(l.at))}</td><td>${esc(l.login || '—')}</td><td>${esc(l.method)}</td>
+    <td>${l.success ? '<span class="tag ok">ok</span>' : '<span class="tag bad">failed</span> <span class="dim">' + esc(l.error || '') + '</span>'}</td>
+    <td class="mono">${esc(l.appVersion || '—')}</td><td class="mono">${esc(l.ip || '—')}</td></tr>`).join('')
+    : '<tr><td colspan="6" class="dim">No logins recorded yet</td></tr>';
+}
+
+async function openUser(id) {
+  const u = USERS.find(x => x.id === id); if (!u) return;
+  const d = $('#detail'); d.classList.add('open');
+  $('#d-body').innerHTML = `<button class="sec" id="d-close" style="float:right">Close</button><h3>${esc(u.username)}</h3><div class="muted">${esc(u.fullName || '')} · ${esc(u.email)}</div><p class="dim">Loading…</p>`;
+  $('#d-close').onclick = () => d.classList.remove('open');
+  const r = await api('/api/admin/user/' + id);
+  if (!r.ok) { $('#d-body').innerHTML += `<div class="note bad">${esc(r.error)}</div>`; return; }
+  const lic = r.licences[0];
+  $('#d-body').innerHTML = `
+    <button class="sec" id="d-close" style="float:right">Close</button>
+    <h3>${esc(u.username)} ${u.admin ? '<span class="tag admin">admin</span>' : ''} ${u.locked ? '<span class="tag bad">deactivated</span>' : ''}</h3>
+    <div class="muted">${esc(u.fullName || '')} · ${esc(u.email)}</div>
+    <div class="kv">
+      <b>Plan</b><span><span class="tag ${u.plan.toLowerCase()}">${esc(u.plan)}</span> ${u.subscriber ? 'until ' + fmtD(u.expires) : ''}</span>
+      <b>Registered</b><span>${fmtD(u.created)}</span>
+      <b>Last login</b><span>${fmt(u.lastLogin)} <span class="dim">(${ago(u.lastLogin)})</span></span>
+      <b>App version</b><span class="mono">${esc(u.appVersion || 'not reported yet')}</span>
+      <b>Smart Scan</b><span>${lic ? `<span class="mono">${esc(lic.key)}</span> · ${lic.used}/${lic.limit} used${lic.expires ? ' · expires ' + fmtD(lic.expires) : ''}${lic.isActive ? '' : ' · <span class="tag bad">revoked</span>'}` : 'no licence'}</span>
+    </div>
+    <div id="d-msg"></div>
+    <h2>Actions</h2>
+    <div class="actions">
+      <select id="a-plan"><option value="Free">Free</option><option value="Basic" ${u.plan==='Basic'?'selected':''}>Basic</option><option value="Pro" ${u.plan==='Pro'?'selected':''}>Pro</option></select>
+      <select id="a-months"><option value="12">12 months</option><option value="1">1 month</option><option value="3">3 months</option><option value="6">6 months</option><option value="24">24 months</option></select>
+      <button id="a-setplan">Set plan</button>
+    </div>
+    <div class="actions">
+      <button class="good" id="a-issue">${lic && lic.isActive ? 'Re-issue licence' : 'Issue Smart Scan licence'}</button>
+      <button class="warn" id="a-revoke" ${lic && lic.isActive ? '' : 'disabled'}>Revoke licence</button>
+      <button class="warn" id="a-forget" ${u.devices ? '' : 'disabled'}>Forget ${u.devices} device${u.devices===1?'':'s'}</button>
+      <button class="warn" id="a-reset">Reset password</button>
+      <button class="${u.locked ? 'good' : 'danger'}" id="a-active">${u.locked ? 'Reactivate account' : 'Deactivate account'}</button>
+    </div>
+    <h2>Remembered devices</h2>
+    ${r.devices.length ? `<table><thead><tr><th>Device</th><th>Since</th><th>Last used</th></tr></thead><tbody>${r.devices.map(x => `<tr><td>${esc(x.deviceName || '—')}</td><td>${fmtD(x.created)}</td><td>${esc(ago(x.lastUsed))}</td></tr>`).join('')}</tbody></table>` : '<p class="dim">None</p>'}
+    <h2>Recent logins</h2>
+    ${r.logins.length ? `<table><thead><tr><th>When</th><th>Method</th><th>Result</th><th>App</th><th>IP</th></tr></thead><tbody>${r.logins.map(l => `<tr><td>${esc(fmt(l.at))}</td><td>${esc(l.method)}</td><td>${l.success ? '<span class="tag ok">ok</span>' : '<span class="tag bad">' + esc(l.error || 'failed') + '</span>'}</td><td class="mono">${esc(l.appVersion || '—')}</td><td class="mono">${esc(l.ip || '—')}</td></tr>`).join('')}</tbody></table>` : '<p class="dim">None recorded</p>'}
+    <h2>Recent scans</h2>
+    ${r.scans.length ? `<table><thead><tr><th>When</th><th>Type</th><th>Result</th></tr></thead><tbody>${r.scans.map(s => `<tr><td>${esc(fmt(s.scannedAt))}</td><td>${esc(s.category || '—')}</td><td>${s.success ? '<span class="tag ok">ok</span>' : '<span class="tag bad">failed</span> <span class="dim">' + esc(s.error || '') + '</span>'}</td></tr>`).join('')}</tbody></table>` : '<p class="dim">None</p>'}
+  `;
+  $('#d-close').onclick = () => d.classList.remove('open');
+  const msg = (t, k) => { $('#d-msg').innerHTML = `<div class="note ${k}">${esc(t)}</div>`; };
+  const act = async (path, body, okText) => { const x = await api(path, body || {}); if (x.ok) { msg(okText(x), 'good'); loadUsers(); } else msg(x.error || 'Failed', 'bad'); return x; };
+
+  $('#a-setplan').onclick = () => act(`/api/admin/user/${id}/plan`, {plan:$('#a-plan').value, months:+$('#a-months').value}, x => `Plan set to ${x.plan}${x.plan !== 'Free' ? ', expires ' + fmtD(x.expires) : ''}.`);
+  $('#a-issue').onclick = () => act(`/api/admin/user/${id}/licence`, {action:'issue'}, x => `Licence issued: ${x.licence} (give this to the user).`);
+  $('#a-revoke').onclick = () => { if (confirm('Revoke this user\'s Smart Scan licence?')) act(`/api/admin/user/${id}/licence`, {action:'revoke'}, () => 'Licence revoked.'); };
+  $('#a-forget').onclick = () => act(`/api/admin/user/${id}/devices/forget`, {}, x => `${x.revoked} device(s) forgotten — they will need to sign in again.`);
+  $('#a-reset').onclick = () => { if (confirm('Reset this user\'s password? You will be shown a temporary password to give them.')) act(`/api/admin/user/${id}/reset-password`, {}, x => `Temporary password: ${x.temporaryPassword} — they will be asked to choose a new one when they sign in.`); };
+  $('#a-active').onclick = () => { const on = u.locked; if (on || confirm('Deactivate this account? They will be signed out everywhere and unable to log in.')) act(`/api/admin/user/${id}/active`, {active:on}, x => x.active ? 'Account reactivated.' : 'Account deactivated.').then(() => setTimeout(() => openUser(id), 400)); };
+}
+
+// Collapsible sections: click a section heading to hide/show everything up to the next heading.
+// Collapsed state is remembered per browser.
+function setupCollapsibles() {
+  const KEY = 'sc-admin-collapsed';
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
+  const store = () => { try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {} };
+  const heads = Array.from(document.querySelectorAll('#app > h2'));
+  const bodyOf = h => { const els = []; let n = h.nextElementSibling; while (n && n.tagName !== 'H2') { els.push(n); n = n.nextElementSibling; } return els; };
+  const apply = (h, collapsed) => {
+    h.classList.toggle('collapsed', collapsed);
+    h.setAttribute('aria-expanded', String(!collapsed));
+    bodyOf(h).forEach(el => el.classList.toggle('sec-hidden', collapsed));
+  };
+  heads.forEach(h => {
+    const key = (h.firstChild && h.firstChild.textContent || h.textContent).trim();
+    const chev = document.createElement('span'); chev.className = 'chev'; chev.textContent = '▾';
+    h.insertBefore(chev, h.firstChild);
+    h.classList.add('collapsible'); h.tabIndex = 0; h.setAttribute('role', 'button');
+    h.title = 'Click to collapse or expand this section';
+    apply(h, !!saved[key]);
+    const toggle = e => {
+      if (e.target.closest('input, label, select, button, a')) return;   // e.g. the "failed only" tick box
+      const now = !h.classList.contains('collapsed');
+      apply(h, now); saved[key] = now; store();
+    };
+    h.addEventListener('click', toggle);
+    h.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(e); } });
+  });
+  const bar = document.createElement('div'); bar.className = 'bar sec-tools';
+  bar.innerHTML = '<button class="sec" id="sec-collapse">Collapse all</button><button class="sec" id="sec-expand">Expand all</button>';
+  $('#app').insertBefore(bar, $('#app').firstChild);
+  $('#sec-collapse').onclick = () => { heads.forEach(h => { apply(h, true); saved[(h.childNodes[1]?.textContent || h.textContent).trim()] = true; }); store(); };
+  $('#sec-expand').onclick = () => { heads.forEach(h => apply(h, false)); saved = {}; store(); };
+}
+
+setupCollapsibles();
+load();
+setInterval(() => { if (!$('#app').classList.contains('hidden')) { loadHealth(); } }, 60000);
+</script>
+</body>
+</html>

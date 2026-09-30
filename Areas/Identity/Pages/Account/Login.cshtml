@@ -1,0 +1,45 @@
+﻿@page
+@model LoginModel
+@{ ViewData["Title"] = "Login"; }
+<section class="auth-page">
+    <div class="auth-card">
+        <a class="auth-brand" asp-area="" asp-controller="Home" asp-action="Index"
+           style="background:#05070f;border-radius:16px;padding:18px 20px;margin-bottom:32px;">
+            <img src="@LoginModel.BrandLogoPath" alt="SmartCube Mobile"
+                 style="display:block;width:260px;max-width:100%;height:auto;margin:0 auto;" />
+        </a>
+        <div class="eyebrow">WELCOME BACK</div>
+        <h1>Sign in to your account.</h1>
+        <p class="muted">Use your SmartCubeMobile account credentials.</p>
+        <form id="account" method="post">
+            <div asp-validation-summary="All" class="form-error"></div>
+            <label asp-for="Input.UserName">Username</label>
+            <input asp-for="Input.UserName" class="form-control" autocomplete="username" placeholder="Your username" />
+            <span asp-validation-for="Input.UserName" class="validation-message"></span>
+            <label asp-for="Input.Password">Password</label>
+            <input asp-for="Input.Password" class="form-control" autocomplete="current-password" placeholder="Your password" />
+            <span asp-validation-for="Input.Password" class="validation-message"></span>
+            <div class="form-row">
+                <label class="check"><input asp-for="Input.RememberMe" /> Remember me</label>
+                <a id="forgot-password" asp-page="./ForgotPassword">Forgotten password?</a>
+            </div>
+            <div class="d-none">
+                <input asp-for="Input.Raymondo" />
+                @Html.HiddenFor(item => LoginModel.RaysText, new { id = "Rays" })
+            </div>
+            <button type="submit" class="btn btn-primary full btn-large">Login</button>
+            <p class="auth-switch">Don't have an account? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Create one</a></p>
+        </form>
+        @if (Model.ExternalLogins?.Count > 0)
+        {
+            <div class="form-info" style="margin-top:20px">External sign-in services are available below.</div>
+            <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                @foreach (var provider in Model.ExternalLogins)
+                {
+                    <button type="submit" class="btn btn-outline full" style="margin-top:10px" name="provider" value="@provider.Name">@provider.DisplayName</button>
+                }
+            </form>
+        }
+    </div>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
