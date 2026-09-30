@@ -332,7 +332,13 @@ $('#l-code').addEventListener('keydown', e => { if (e.key === 'Enter') $('#l-go'
 $('#logout').onclick = async () => { await api('/api/account/logout', {}); showLogin('Signed out.'); };
 $('#refresh').onclick = async () => {
   const b = $('#refresh'); b.disabled = true; b.textContent = 'Refreshing…';
-  try { await load(); } finally {
+  try {
+    // Wake the production runner so the "waiting in development" cards are current, then reload.
+    const w = await api('/api/admin/ops/wake');
+    if (w.ok && w.woke) await new Promise(r => setTimeout(r, 4000));
+    else if (w.ok) $('#ops-runner').textContent = 'Could not start the runner: ' + (w.detail || 'unknown');
+    await load();
+  } finally {
     b.textContent = 'Updated ' + new Date().toLocaleTimeString('en-GB');
     setTimeout(() => { b.textContent = 'Refresh'; b.disabled = false; }, 2500);
   }
@@ -753,7 +759,7 @@ async function loadOps() {
   if (!r.ok) { $('#ops-runner').textContent = r.error || 'Not available'; return; }
   opsWaiting($('#ops-app'), 'App', r.app);
   opsWaiting($('#ops-server'), 'Server', r.server);
-  $('#ops-runner').textContent = r.runnerAlive ? `Runner on the production PC is alive (last seen ${fmt(r.runnerSeen)}).` : 'Runner on the production PC has not reported in the last 3 minutes; queued jobs will wait.';
+  $('#ops-runner').textContent = r.runnerSeen ? `Production last checked ${fmt(r.runnerSeen)} (hourly, or when Refresh is clicked).` : 'Production has not reported yet.';
   $('#ops-operator').classList.toggle('hidden', !r.isOperator);
   const busy = r.jobs.some(j => j.status === 'queued' || j.status === 'running');
   document.querySelectorAll('#ops-operator button[data-job]').forEach(b => b.disabled = busy);
@@ -774,7 +780,7 @@ function setupOps() {
     const what = { 'pull-server': 'pull the server changes from GitHub and redeploy the LIVE server', 'pull-app': 'pull the app changes from GitHub into the production app copy', 'deploy-server': 'rebuild and restart the LIVE server' }[job];
     if (!confirm(`This will ${what}. Continue?`)) return;
     const r = await api('/api/admin/ops/run', { job });
-    $('#ops-msg').textContent = r.ok ? 'Queued. The runner picks it up within a minute; this page updates as it goes.' : (r.error || 'Failed');
+    $('#ops-msg').textContent = r.ok ? (r.woke ? 'Started. This page updates as it goes.' : 'Queued, but the runner could not be started (' + (r.detail || 'unknown') + '); it will run on its hourly schedule.') : (r.error || 'Failed');
     loadOps();
   });
   $('#ops-release-cancel').onclick = () => $('#ops-release').classList.add('hidden');

@@ -85,7 +85,34 @@ namespace SmartCubeMobileV2026.Controllers
             if (pending.Count > 0) return Conflict(new { ok = false, error = $"'{pending[0].Job}' is still {pending[0].Status}. Wait for it to finish." });
 
             await _db.Database.ExecuteSqlInterpolatedAsync($"INSERT dbo.ProdJobs (Job, Args, RequestedBy) VALUES ({req.Job}, {args}, {user.UserName})");
-            return Ok(new { ok = true });
+            var (woke, detail) = WakeRunner();
+            return Ok(new { ok = true, woke, detail });
+        }
+
+        // Start the runner now instead of waiting for its hourly schedule (admin page Refresh, and after
+        // queueing a job). Needs the app pool to be allowed to run the task:
+        //   icacls C:\Windows\System32\Tasks\SmartCube-ProdRunner /grant "IIS APPPOOL\DefaultAppPool:RX"
+        [HttpPost("wake")]
+        public async Task<IActionResult> Wake()
+        {
+            if (await RequireAdmin() == null) return Unauthorized(new { ok = false, error = "Sign in as an administrator." });
+            var (ok, detail) = WakeRunner();
+            return Ok(new { ok = true, woke = ok, detail });
+        }
+
+        private (bool Ok, string Detail) WakeRunner()
+        {
+            try
+            {
+                var task = _config["Production:RunnerTask"] ?? "SmartCube-ProdRunner";
+                var psi = new System.Diagnostics.ProcessStartInfo("schtasks.exe", $"/run /tn \"{task}\"")
+                { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
+                using var p = System.Diagnostics.Process.Start(psi);
+                var output = p.StandardOutput.ReadToEnd() + p.StandardError.ReadToEnd();
+                p.WaitForExit(10000);
+                return (p.ExitCode == 0, output.Trim());
+            }
+            catch (Exception ex) { return (false, ex.Message); }
         }
 
         // GitHub compare: production's commit ... main. ahead_by = drops not yet pulled.
