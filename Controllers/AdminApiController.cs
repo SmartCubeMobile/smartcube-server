@@ -407,6 +407,33 @@ namespace SmartCubeMobileV2026.Controllers
             return PhysicalFile(file.FullName, "application/zip", file.Name, enableRangeProcessing: true);
         }
 
+        // Memos and guides kept in the repo's Docs folder (HTML), shown under Developer workflow.
+        private string DocsDir => Path.Combine(_env.ContentRootPath, "Docs");
+
+        [HttpGet("docs")]
+        public async Task<IActionResult> Docs()
+        {
+            if (await RequireAdmin() == null) return Denied();
+            if (!Directory.Exists(DocsDir)) return Ok(new { ok = true, docs = Array.Empty<object>() });
+            var docs = Directory.GetFiles(DocsDir, "*.html").Select(p =>
+            {
+                var head = System.IO.File.ReadAllText(p);
+                var m = System.Text.RegularExpressions.Regex.Match(head, @"<title>\s*(.*?)\s*</title>", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                return new { file = Path.GetFileName(p), title = m.Success ? m.Groups[1].Value : Path.GetFileNameWithoutExtension(p) };
+            }).OrderBy(d => d.title).ToList();
+            return Ok(new { ok = true, docs });
+        }
+
+        [HttpGet("docs/{file}")]
+        public async Task<IActionResult> Doc(string file)
+        {
+            if (await RequireAdmin() == null) return Denied();
+            if (string.IsNullOrWhiteSpace(file) || file.Any(c => !(char.IsLetterOrDigit(c) || c is '-' or '_' or '.')) || !file.EndsWith(".html", StringComparison.OrdinalIgnoreCase))
+                return NotFound();
+            var p = Path.Combine(DocsDir, file);
+            return System.IO.File.Exists(p) ? PhysicalFile(p, "text/html; charset=utf-8") : NotFound();
+        }
+
         private FileInfo FindSourceFile(string version)
         {
             if (string.IsNullOrWhiteSpace(version) || version.Any(c => !(char.IsDigit(c) || c == '.'))) return null;

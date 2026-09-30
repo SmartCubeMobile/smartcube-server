@@ -168,7 +168,26 @@ tr.sel{background:#182238}
   <h2>Releases</h2>
   <div class="bar"><span id="rel-summary" class="dim"></span></div>
   <div class="scroll"><table id="releases"><thead><tr><th>Version</th><th>Released</th><th>Installer</th><th>Source code</th><th>Downloads</th><th>Users on it</th><th>Notes</th></tr></thead><tbody></tbody></table></div>
-  <div class="note" style="font-size:12px;line-height:1.6"><b>Developer source code.</b> Each release's <i>Source</i> zip is the app exactly as released, ready for Visual Studio 2022: unzip it outside OneDrive, open <span class="mono">SmartCubeMobile.sln</span>, pick <i>Windows Machine</i> and press F5. It needs the ".NET Multi-platform App UI development" workload; full steps are in <span class="mono">README-DEVELOPER.txt</span> inside the zip. Keep the zips private: they contain live service keys.</div>
+  <div class="note" style="font-size:12px;line-height:1.6"><b>Developer source code.</b> Each release's <i>Source</i> zip is the app exactly as released, ready for Visual Studio 2022: unzip it outside OneDrive, open <span class="mono">SmartCubeMobile.sln</span>, pick <i>Windows Machine</i> and press F5. It needs the ".NET Multi-platform App UI development" workload; full steps are in <span class="mono">README-DEVELOPER.txt</span> inside the zip. Keep the zips private: releases up to 1.0.7 contain the old TrueLayer key.</div>
+
+  <h2>Developer workflow</h2>
+  <div class="note" style="font-size:12px;line-height:1.7">
+    <b>How it works.</b> Dad develops the app and the server in the shared GitHub repos. Dan pulls into production when ready (<span class="mono">pull-from-dev.ps1</span>), tests, then releases. Production never pushes back; anything done in production reaches Dad as a patch file (<span class="mono">hotfix-patch.ps1</span>).
+  </div>
+  <div class="scroll"><table id="devlinks"><thead><tr><th>Where</th><th>Link</th><th>Use it for</th></tr></thead><tbody>
+    <tr><td>GitHub</td><td><a class="rel-dl" href="https://github.com/SmartCubeMobile/smartcube-app" target="_blank" rel="noopener">smartcube-app</a></td><td>Shared development of the Windows app (Dad's). Commits, history, files.</td></tr>
+    <tr><td>GitHub</td><td><a class="rel-dl" href="https://github.com/SmartCubeMobile/smartcube-server" target="_blank" rel="noopener">smartcube-server</a></td><td>Shared development of this server and the admin page (Dad's).</td></tr>
+    <tr><td>GitHub</td><td><a class="rel-dl" href="https://github.com/orgs/SmartCubeMobile/people" target="_blank" rel="noopener">Organisation members</a></td><td>Invite Dad, check who has access.</td></tr>
+    <tr><td>TrueLayer</td><td><a class="rel-dl" href="https://console.truelayer.com" target="_blank" rel="noopener">TrueLayer console</a></td><td>Bank connection settings; issue a new client secret (goes in the server's appsettings.json, then deploy-server.ps1).</td></tr>
+    <tr><td>Docs</td><td id="devdocs" class="dim">Loading…</td><td>Memos and guides kept in the server repo's Docs folder (admin sign-in required).</td></tr>
+  </table></div>
+  <div class="note" style="font-size:12px;line-height:1.7">
+    <b>Production scripts</b> (Dan's PC, <span class="mono">D:\SmartCubeMobile\Versions</span>):
+    <span class="mono">pull-from-dev.ps1 -Part App|Server [-Preview]</span> pull Dad's work into production &middot;
+    <span class="mono">deploy-server.ps1</span> rebuild + restart this server, applying database migrations &middot;
+    <span class="mono">release.ps1 -Version x.y.z -Notes "..."</span> build the installer and publish it &middot;
+    <span class="mono">hotfix-patch.ps1 -Part App|Server</span> patch file for Dad from a production commit (lands in <span class="mono">D:\SmartCubeMobile\Hotfixes</span>).
+  </div>
 
   <h2>Energy tariff data</h2>
   <div class="bar"><span id="tariff-summary" class="dim"></span></div>
@@ -293,7 +312,7 @@ async function load() {
   $('#cards').innerHTML = c.map(([l,v,s,k]) => `<div class="card ${k}"><div class="l">${esc(l)}</div><div class="v">${esc(v)}</div><div class="s">${esc(s)}</div></div>`).join('');
   $('#foot').textContent = 'Server time ' + fmt(o.serverTimeUtc) + ' (all times shown in your local time zone)';
 
-  await Promise.all([loadHealth(), loadTickets(), loadReleases(), loadTariffs(), loadUsers(), loadScans(), loadLogins(), loadNotes()]);
+  await Promise.all([loadHealth(), loadTickets(), loadReleases(), loadDevDocs(), loadTariffs(), loadUsers(), loadScans(), loadLogins(), loadNotes()]);
   $('#foot').textContent += ' · last refreshed ' + new Date().toLocaleTimeString('en-GB');
   initChat();
 }
@@ -519,6 +538,16 @@ async function loadReleases() {
     <td>${x.downloads}</td><td>${x.usersOnVersion}</td>
     <td style="white-space:pre-wrap;max-width:520px">${esc(x.notes || '')}</td></tr>`).join('')
     : '<tr><td colspan="7" class="dim">No releases recorded</td></tr>';
+}
+
+async function loadDevDocs() {
+  const r = await api('/api/admin/docs');
+  const el = $('#devdocs');
+  if (!r.ok) { el.textContent = 'Not available'; return; }
+  el.className = '';
+  el.innerHTML = r.docs.length
+    ? r.docs.map(d => `<a class="rel-dl" href="/api/admin/docs/${encodeURIComponent(d.file)}" target="_blank" rel="noopener">${esc(d.title)}</a>`).join('<br>')
+    : '<span class="dim">No documents yet</span>';
 }
 
 async function loadTariffs() {
