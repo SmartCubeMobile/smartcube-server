@@ -760,9 +760,14 @@ async function loadOps() {
   opsWaiting($('#ops-app'), 'App', r.app);
   opsWaiting($('#ops-server'), 'Server', r.server);
   $('#ops-runner').textContent = r.runnerSeen ? `Production last checked ${fmt(r.runnerSeen)} (hourly, or when Refresh is clicked).` : 'Production has not reported yet.';
-  $('#ops-operator').classList.toggle('hidden', !r.isOperator);
+  // Everyone sees the buttons; only the operator can press them.
+  $('#ops-operator').classList.remove('hidden');
   const busy = r.jobs.some(j => j.status === 'queued' || j.status === 'running');
-  document.querySelectorAll('#ops-operator button[data-job]').forEach(b => b.disabled = busy);
+  document.querySelectorAll('#ops-operator button[data-job]').forEach(b => {
+    b.disabled = busy || !r.isOperator;
+    if (!r.isOperator) { b.title = 'Only Dan can run this'; b.style.opacity = '.45'; b.style.cursor = 'not-allowed'; }
+  });
+  if (!r.isOperator) $('#ops-msg').textContent = 'These buttons run on Dan’s PC and are for Dan only. You can watch the jobs below.';
   $('#ops-jobs tbody').innerHTML = r.jobs.length ? r.jobs.map(j => {
     const cls = j.status === 'done' ? 'ok' : j.status === 'failed' ? 'bug' : j.status === 'running' ? 'website' : 'note';
     const args = j.args ? (() => { try { const a = JSON.parse(j.args); return ` v${esc(a.version)}`; } catch { return ''; } })() : '';
