@@ -198,6 +198,29 @@ tr.sel{background:#182238}
     <span class="mono">hotfix-patch.ps1 -Part App|Server</span> patch file for Dad from a production commit (lands in <span class="mono">D:\SmartCubeMobile\Hotfixes</span>).
   </div>
 
+  <h2>Production</h2>
+  <div class="bar"><span id="ops-runner" class="dim"></span></div>
+  <div class="drop-row">
+    <div class="card" id="ops-app"><b>App</b> <span class="dim">loading…</span></div>
+    <div class="card" id="ops-server"><b>Server</b> <span class="dim">loading…</span></div>
+  </div>
+  <div id="ops-operator" class="hidden">
+    <div class="bar" style="margin-top:10px">
+      <button data-job="pull-server" title="Fetch Dad's server changes from GitHub into production, rebuild and restart the live server (applies database migrations)">Pull server &amp; deploy</button>
+      <button data-job="pull-app" title="Fetch Dad's app changes from GitHub into the production app copy (no release yet)">Pull app</button>
+      <button data-job="deploy-server" title="Rebuild and restart the live server from the production copy as it is now">Deploy server</button>
+      <button data-job="release" title="Build the installer from the production app copy and publish it on the website">Release app…</button>
+    </div>
+    <div id="ops-release" class="bar hidden" style="margin-top:8px">
+      <input id="ops-version" type="text" placeholder="Version, e.g. 1.0.9" style="width:150px">
+      <input id="ops-notes" type="text" placeholder="Release notes for users" style="flex:1;min-width:240px">
+      <button id="ops-release-go">Release</button>
+      <button id="ops-release-cancel">Cancel</button>
+    </div>
+    <div id="ops-msg" class="dim" style="font-size:12px;margin-top:6px"></div>
+  </div>
+  <div class="scroll" style="margin-top:10px"><table id="ops-jobs"><thead><tr><th>When</th><th>Job</th><th>By</th><th>Status</th><th>Output</th></tr></thead><tbody></tbody></table></div>
+
   <h2>Drop zone (send code to GitHub)</h2>
   <div class="note" style="font-size:12px;line-height:1.7">
     <b>For Dad.</b> No git needed. <b>1.</b> Get the latest code: <a class="rel-dl" href="/api/admin/drop/app/zip">app zip</a> &middot; <a class="rel-dl" href="/api/admin/drop/server/zip">server zip</a> (unzip outside OneDrive, open in Visual Studio). <b>2.</b> Make your changes. <b>3.</b> Drag the whole project folder onto the matching box below, or click the box to choose it. You'll see exactly what changed before anything is sent; nothing goes until you click <i>Send to GitHub</i>. Build output (<span class="mono">bin</span>, <span class="mono">obj</span>, <span class="mono">.vs</span>), <span class="mono">appsettings.json</span> and database files are never sent, and only files that changed are uploaded.
@@ -341,7 +364,7 @@ async function load() {
   $('#cards').innerHTML = c.map(([l,v,s,k]) => `<div class="card ${k}"><div class="l">${esc(l)}</div><div class="v">${esc(v)}</div><div class="s">${esc(s)}</div></div>`).join('');
   $('#foot').textContent = 'Server time ' + fmt(o.serverTimeUtc) + ' (all times shown in your local time zone)';
 
-  await Promise.all([loadHealth(), loadTickets(), loadReleases(), loadDevDocs(), loadTariffs(), loadUsers(), loadScans(), loadLogins(), loadNotes()]);
+  await Promise.all([loadHealth(), loadTickets(), loadReleases(), loadDevDocs(), loadOps(), loadTariffs(), loadUsers(), loadScans(), loadLogins(), loadNotes()]);
   $('#foot').textContent += ' · last refreshed ' + new Date().toLocaleTimeString('en-GB');
   initChat();
 }
@@ -715,6 +738,56 @@ function setupDropZone() {
   $('#drop-cancel').onclick = dropReset;
 }
 setupDropZone();
+
+// ---------------- Production: what's waiting on GitHub, and the operator's buttons ----------------
+let OPS_TIMER = null;
+function opsWaiting(el, label, w) {
+  if (!w.known) { el.innerHTML = `<b>${label}</b> <span class="dim">${esc(w.error || 'unknown')}</span>`; return; }
+  const dirty = w.dirty ? ' <span class="tag website" title="The production copy has uncommitted changes; pulls will refuse until they are committed">uncommitted changes</span>' : '';
+  if (!w.aheadBy) { el.innerHTML = `<b>${label}</b> <span class="tag ok">up to date</span>${dirty} <span class="dim">production is at ${esc(w.prodSha.slice(0, 7))}</span>`; return; }
+  el.innerHTML = `<b>${label}</b> <span class="tag task">${w.aheadBy} waiting in development</span>${dirty}<div style="margin-top:6px;font-size:12px">` +
+    w.commits.map(c => `<div><a class="rel-dl" href="${c.url}" target="_blank" rel="noopener">${esc(c.sha)}</a> ${esc(c.message)} <span class="dim">· ${esc(c.author)}, ${esc(fmt(c.date))}</span></div>`).join('') + '</div>';
+}
+async function loadOps() {
+  const r = await api('/api/admin/ops/status');
+  if (!r.ok) { $('#ops-runner').textContent = r.error || 'Not available'; return; }
+  opsWaiting($('#ops-app'), 'App', r.app);
+  opsWaiting($('#ops-server'), 'Server', r.server);
+  $('#ops-runner').textContent = r.runnerAlive ? `Runner on the production PC is alive (last seen ${fmt(r.runnerSeen)}).` : 'Runner on the production PC has not reported in the last 3 minutes; queued jobs will wait.';
+  $('#ops-operator').classList.toggle('hidden', !r.isOperator);
+  const busy = r.jobs.some(j => j.status === 'queued' || j.status === 'running');
+  document.querySelectorAll('#ops-operator button[data-job]').forEach(b => b.disabled = busy);
+  $('#ops-jobs tbody').innerHTML = r.jobs.length ? r.jobs.map(j => {
+    const cls = j.status === 'done' ? 'ok' : j.status === 'failed' ? 'bug' : j.status === 'running' ? 'website' : 'note';
+    const args = j.args ? (() => { try { const a = JSON.parse(j.args); return ` v${esc(a.version)}`; } catch { return ''; } })() : '';
+    const took = j.startedAt && j.finishedAt ? ` · ${Math.round((new Date(j.finishedAt) - new Date(j.startedAt)) / 1000)}s` : '';
+    return `<tr><td>${esc(fmt(j.requestedAt))}</td><td class="mono">${esc(j.job)}${args}</td><td>${esc(j.requestedBy)}</td><td><span class="tag ${cls}">${esc(j.status)}</span><span class="dim">${took}</span></td>
+      <td>${j.output ? `<details><summary class="dim" style="cursor:pointer">show</summary><pre style="white-space:pre-wrap;font-size:11px;max-height:320px;overflow:auto;margin:6px 0 0">${esc(j.output)}</pre></details>` : ''}</td></tr>`;
+  }).join('') : '<tr><td colspan="5" class="dim">No jobs yet</td></tr>';
+  clearTimeout(OPS_TIMER);
+  if (busy) OPS_TIMER = setTimeout(loadOps, 10000);
+}
+function setupOps() {
+  document.querySelectorAll('#ops-operator button[data-job]').forEach(b => b.onclick = async () => {
+    const job = b.dataset.job;
+    if (job === 'release') { $('#ops-release').classList.remove('hidden'); $('#ops-version').focus(); return; }
+    const what = { 'pull-server': 'pull the server changes from GitHub and redeploy the LIVE server', 'pull-app': 'pull the app changes from GitHub into the production app copy', 'deploy-server': 'rebuild and restart the LIVE server' }[job];
+    if (!confirm(`This will ${what}. Continue?`)) return;
+    const r = await api('/api/admin/ops/run', { job });
+    $('#ops-msg').textContent = r.ok ? 'Queued. The runner picks it up within a minute; this page updates as it goes.' : (r.error || 'Failed');
+    loadOps();
+  });
+  $('#ops-release-cancel').onclick = () => $('#ops-release').classList.add('hidden');
+  $('#ops-release-go').onclick = async () => {
+    const version = $('#ops-version').value.trim(), notes = $('#ops-notes').value.trim();
+    if (!confirm(`Release v${version} to users now?`)) return;
+    const r = await api('/api/admin/ops/run', { job: 'release', version, notes });
+    $('#ops-msg').textContent = r.ok ? 'Release queued. It takes a few minutes; watch the job below.' : (r.error || 'Failed');
+    if (r.ok) { $('#ops-release').classList.add('hidden'); $('#ops-version').value = ''; $('#ops-notes').value = ''; }
+    loadOps();
+  };
+}
+setupOps();
 
 async function loadDevDocs() {
   const r = await api('/api/admin/docs');
