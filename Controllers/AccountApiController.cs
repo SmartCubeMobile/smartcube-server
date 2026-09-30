@@ -24,15 +24,74 @@ namespace SmartCubeMobileV2026.Controllers
         private readonly ApplicationDbContext _db;
         private readonly IWebHostEnvironment _env;
         private readonly Microsoft.AspNetCore.DataProtection.IDataProtector _deviceKeyProtector;
+        private readonly IConfiguration _config;
+        private static readonly HttpClient _trueLayerHttp = new() { Timeout = TimeSpan.FromSeconds(30) };
 
         public AccountApiController(UserManager<ApplicationUser> users, SignInManager<ApplicationUser> signIn,
-            ApplicationDbContext db, IWebHostEnvironment env, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtection)
+            ApplicationDbContext db, IWebHostEnvironment env, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtection,
+            IConfiguration config)
         {
             _deviceKeyProtector = dataProtection.CreateProtector("SmartCube.DeviceKeys.v1");
             _users = users;
             _signIn = signIn;
             _db = db;
             _env = env;
+            _config = config;
+        }
+
+        // ---- TrueLayer token exchange ----
+        // The TrueLayer client secret lives only here (appsettings TrueLayer:ClientSecret). The app sends
+        // the one-time auth code or its refresh token; the bank tokens go straight back to the app and are
+        // never stored on the server.
+        public record TrueLayerTokenRequest(string GrantType, string Code, string RedirectUri, string RefreshToken);
+
+        [HttpPost("truelayer/token")]
+        public async Task<IActionResult> TrueLayerToken([FromBody] TrueLayerTokenRequest req)
+        {
+            var user = await _users.GetUserAsync(User);
+            if (user == null) return Unauthorized(new { ok = false, error = "Sign in first." });
+            var clientId = _config["TrueLayer:ClientId"];
+            var clientSecret = _config["TrueLayer:ClientSecret"];
+            if (string.IsNullOrWhiteSpace(clientId) || string.IsNullOrWhiteSpace(clientSecret))
+                return StatusCode(503, new { ok = false, error = "Bank connections aren't set up on this server." });
+
+            var form = new Dictionary<string, string> { ["client_id"] = clientId, ["client_secret"] = clientSecret };
+            switch (req?.GrantType)
+            {
+                case "authorization_code":
+                    if (string.IsNullOrWhiteSpace(req.Code)) return BadRequest(new { ok = false, error = "Missing auth code." });
+                    form["grant_type"] = "authorization_code";
+                    form["code"] = req.Code;
+                    form["redirect_uri"] = string.IsNullOrWhiteSpace(req.RedirectUri) ? "http://localhost:3000/callback" : req.RedirectUri;
+                    break;
+                case "refresh_token":
+                    if (string.IsNullOrWhiteSpace(req.RefreshToken)) return BadRequest(new { ok = false, error = "Missing refresh token." });
+                    form["grant_type"] = "refresh_token";
+                    form["refresh_token"] = req.RefreshToken;
+                    break;
+                default:
+                    return BadRequest(new { ok = false, error = "Unknown grant type." });
+            }
+
+            try
+            {
+                using var response = await _trueLayerHttp.PostAsync("https://auth.truelayer.com/connect/token", new FormUrlEncodedContent(form));
+                var body = await response.Content.ReadAsStringAsync();
+                if (!response.IsSuccessStatusCode)
+                    return StatusCode(502, new { ok = false, error = $"TrueLayer refused ({(int)response.StatusCode}): {body}" });
+                var json = System.Text.Json.JsonDocument.Parse(body).RootElement;
+                return Ok(new
+                {
+                    ok = true,
+                    accessToken = json.TryGetProperty("access_token", out var a) ? a.GetString() : null,
+                    refreshToken = json.TryGetProperty("refresh_token", out var r) ? r.GetString() : null,
+                    expiresIn = json.TryGetProperty("expires_in", out var e) && e.TryGetInt32(out var secs) ? secs : (int?)null,
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(502, new { ok = false, error = "Could not reach TrueLayer: " + ex.Message });
+            }
         }
 
         public record RegisterRequest(string Username, string FullName, string Email, string Password);
