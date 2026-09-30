@@ -85,6 +85,15 @@ tr.sel{background:#182238}
 .kv b{color:var(--muted);font-weight:500}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
 .note{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;margin:10px 0}
+.drop-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0}
+.drop{border:2px dashed var(--border);border-radius:14px;padding:22px 16px;text-align:center;cursor:pointer;background:var(--card);display:flex;flex-direction:column;gap:4px;transition:border-color .15s,background .15s}
+.drop b{font-size:15px}.drop span{font-size:12px;color:var(--muted)}
+.drop:hover,.drop:focus-visible,.drop.over{border-color:#60A5FA;background:var(--card2);outline:none}
+.drop.busy{opacity:.5;pointer-events:none}
+.chg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:8px 0}
+.chg div{background:var(--card2);border-radius:10px;padding:8px 10px}.chg b{display:block;font-size:20px}.chg span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.chg .add b{color:#34D399}.chg .mod b{color:#FBBF24}.chg .del b{color:#FCA5A5}
+.warn{background:#3B2A0A;color:#FBBF24;border-radius:10px;padding:8px 12px;margin:6px 0;font-size:12px}
 .note.good{border-color:#14532D;color:#86EFAC}.note.bad{border-color:#7F1D1D;color:#FCA5A5}
 #login{max-width:380px;margin:80px auto;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px}
 #login h2{margin:0 0 4px;text-transform:none;letter-spacing:0;color:var(--text);font-size:20px}
@@ -187,6 +196,26 @@ tr.sel{background:#182238}
     <span class="mono">deploy-server.ps1</span> rebuild + restart this server, applying database migrations &middot;
     <span class="mono">release.ps1 -Version x.y.z -Notes "..."</span> build the installer and publish it &middot;
     <span class="mono">hotfix-patch.ps1 -Part App|Server</span> patch file for Dad from a production commit (lands in <span class="mono">D:\SmartCubeMobile\Hotfixes</span>).
+  </div>
+
+  <h2>Drop zone (send code to GitHub)</h2>
+  <div class="note" style="font-size:12px;line-height:1.7">
+    <b>For Dad.</b> No git needed. <b>1.</b> Get the latest code: <a class="rel-dl" href="/api/admin/drop/app/zip">app zip</a> &middot; <a class="rel-dl" href="/api/admin/drop/server/zip">server zip</a> (unzip outside OneDrive, open in Visual Studio). <b>2.</b> Make your changes. <b>3.</b> Drag the whole project folder onto the matching box below, or click the box to choose it. You'll see exactly what changed before anything is sent; nothing goes until you click <i>Send to GitHub</i>. Build output (<span class="mono">bin</span>, <span class="mono">obj</span>, <span class="mono">.vs</span>), <span class="mono">appsettings.json</span> and database files are never sent, and only files that changed are uploaded.
+  </div>
+  <div class="drop-row">
+    <div class="drop" data-part="app" tabindex="0" role="button"><b>App</b><span>the folder containing SmartCubeMobile.csproj</span><input type="file" webkitdirectory multiple hidden></div>
+    <div class="drop" data-part="server" tabindex="0" role="button"><b>Server</b><span>the folder containing SmartCubeMobileV2026.csproj</span><input type="file" webkitdirectory multiple hidden></div>
+  </div>
+  <div id="drop-panel" class="card hidden" style="margin-top:12px">
+    <div class="bar"><b id="drop-title"></b><span id="drop-status" class="dim"></span></div>
+    <div id="drop-summary"></div>
+    <div id="drop-lists" class="scroll" style="max-height:260px;overflow:auto;font-size:12px"></div>
+    <div id="drop-actions" class="bar hidden" style="margin-top:10px">
+      <input id="drop-message" type="text" placeholder="What did you change? (one line)" style="flex:1;min-width:220px">
+      <button id="drop-send" class="primary">Send to GitHub</button>
+      <button id="drop-cancel">Cancel</button>
+    </div>
+    <div id="drop-result" class="hidden" style="margin-top:10px"></div>
   </div>
 
   <h2>Energy tariff data</h2>
@@ -539,6 +568,153 @@ async function loadReleases() {
     <td style="white-space:pre-wrap;max-width:520px">${esc(x.notes || '')}</td></tr>`).join('')
     : '<tr><td colspan="7" class="dim">No releases recorded</td></tr>';
 }
+
+// ---------------- Drop zone: project folder -> commit on GitHub ----------------
+const DROP_SKIP_DIRS = new Set(['bin', 'obj', '.vs', '.git', 'node_modules', 'packages', 'App_Data', 'Installers', 'logs']);
+const DROP_SKIP_FILES = new Set(['appsettings.json', 'app_offline.htm']);
+const DROP_SKIP_EXT = ['.user', '.suo', '.bak', '.mdf', '.ldf', '.db', '.xlsx'];
+let DROP = null;   // {part, files: Map(path -> File), preview}
+
+function dropSkip(path) {
+  const parts = path.split('/');
+  if (parts.slice(0, -1).some(d => DROP_SKIP_DIRS.has(d))) return true;
+  if (path.startsWith('Users/Data/')) return true;
+  const name = parts[parts.length - 1];
+  return DROP_SKIP_FILES.has(name) || DROP_SKIP_EXT.some(e => name.toLowerCase().endsWith(e));
+}
+
+// Walk a dropped directory entry (drag & drop) into [{path, file}], skipping build output early.
+async function walkEntry(entry, prefix, out) {
+  if (entry.isFile) {
+    const file = await new Promise((res, rej) => entry.file(res, rej));
+    out.push({ path: prefix + entry.name, file });
+  } else if (entry.isDirectory) {
+    if (DROP_SKIP_DIRS.has(entry.name)) return;
+    const reader = entry.createReader();
+    for (;;) {
+      const batch = await new Promise((res, rej) => reader.readEntries(res, rej));
+      if (!batch.length) break;
+      for (const e of batch) await walkEntry(e, prefix + entry.name + '/', out);
+    }
+  }
+}
+
+async function gitBlobSha(file) {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const header = new TextEncoder().encode('blob ' + bytes.length + '\0');
+  const all = new Uint8Array(header.length + bytes.length);
+  all.set(header); all.set(bytes, header.length);
+  const hash = await crypto.subtle.digest('SHA-1', all);
+  return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function dropStatus(t) { $('#drop-status').textContent = t || ''; }
+function dropReset() { DROP = null; $('#drop-panel').classList.add('hidden'); document.querySelectorAll('.drop').forEach(d => d.classList.remove('busy')); }
+
+async function dropStart(part, items) {
+  // items: [{path (relative, forward slashes, no root folder), file}]
+  const files = items.filter(x => !dropSkip(x.path));
+  if (!files.length) { alert('No project files found in that folder.'); return; }
+  DROP = { part, files: new Map(files.map(x => [x.path, x.file])) };
+  document.querySelectorAll('.drop').forEach(d => d.classList.add('busy'));
+  $('#drop-panel').classList.remove('hidden');
+  $('#drop-title').textContent = (part === 'app' ? 'App' : 'Server') + ' folder';
+  $('#drop-summary').innerHTML = ''; $('#drop-lists').innerHTML = '';
+  $('#drop-actions').classList.add('hidden'); $('#drop-result').classList.add('hidden');
+  $('#drop-message').value = '';
+
+  const stamps = [];
+  let n = 0;
+  for (const [path, file] of DROP.files) {
+    stamps.push({ path, sha: await gitBlobSha(file), size: file.size });
+    if (++n % 25 === 0) dropStatus(`Checking files… ${n} of ${DROP.files.size}`);
+  }
+  dropStatus('Comparing with GitHub…');
+  const r = await api(`/api/admin/drop/${part}/preview`, { files: stamps });
+  if (!r.ok) { dropStatus(''); $('#drop-summary').innerHTML = `<div class="warn">${esc(r.error || 'Comparison failed')}</div>`; document.querySelectorAll('.drop').forEach(d => d.classList.remove('busy')); return; }
+  DROP.preview = r;
+  DROP.stamps = new Map(stamps.map(s => [s.path, s]));
+  dropStatus(`Compared with ${r.repo} (latest: "${r.baseMessage.split('\n')[0]}")`);
+  const total = r.added.length + r.modified.length + r.deleted.length;
+  $('#drop-summary').innerHTML = `
+    <div class="chg"><div class="add"><b>${r.added.length}</b><span>new</span></div><div class="mod"><b>${r.modified.length}</b><span>changed</span></div><div class="del"><b>${r.deleted.length}</b><span>deleted</span></div><div><b>${r.unchanged}</b><span>unchanged</span></div></div>
+    ${r.warnings.map(w => `<div class="warn">${esc(w)}</div>`).join('')}
+    ${total ? `<div class="dim" style="font-size:12px">${(r.uploadBytes / 1048576).toFixed(1)} MB to upload. ${r.skipped} build/secret files ignored.</div>` : '<div class="dim">Nothing has changed: GitHub already has exactly this folder.</div>'}`;
+  const row = (cls, label, list) => list.map(p => `<div><span class="tag ${cls}">${label}</span> <span class="mono">${esc(p)}</span></div>`).join('');
+  $('#drop-lists').innerHTML = row('fix', 'new', r.added) + row('website', 'changed', r.modified) + row('bug', 'deleted', r.deleted);
+  if (total) $('#drop-actions').classList.remove('hidden');
+  else document.querySelectorAll('.drop').forEach(d => d.classList.remove('busy'));
+}
+
+async function dropSend() {
+  if (!DROP?.preview) return;
+  const p = DROP.preview, part = DROP.part;
+  $('#drop-send').disabled = true; $('#drop-cancel').disabled = true;
+  const toUpload = [...p.added, ...p.modified];
+  const shas = new Map();
+  try {
+    // Upload changed files in batches of about 15 MB (20 MB as base64; IIS refuses requests over 30 MB).
+    let batch = [], batchBytes = 0, done = 0;
+    const flush = async () => {
+      if (!batch.length) return;
+      const r = await api(`/api/admin/drop/${part}/blobs`, { files: batch });
+      if (!r.ok) throw new Error(r.error || 'Upload failed');
+      r.files.forEach(f => shas.set(f.path, f.sha));
+      done += batch.length; batch = []; batchBytes = 0;
+      dropStatus(`Uploading… ${done} of ${toUpload.length} files`);
+    };
+    for (const path of toUpload) {
+      const file = DROP.files.get(path);
+      const b64 = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result.split(',')[1] || ''); fr.onerror = rej; fr.readAsDataURL(file); });
+      batch.push({ path, contentBase64: b64 }); batchBytes += file.size;
+      if (batchBytes > 15 * 1048576 || batch.length >= 200) await flush();
+    }
+    await flush();
+    dropStatus('Creating the commit…');
+    const changes = [...toUpload.map(path => ({ path, sha: shas.get(path) })), ...p.deleted.map(path => ({ path, sha: null }))];
+    const r = await api(`/api/admin/drop/${part}/commit`, { baseSha: p.baseSha, message: $('#drop-message').value, changes });
+    if (!r.ok) throw new Error(r.error || 'Commit failed');
+    dropStatus('');
+    $('#drop-actions').classList.add('hidden');
+    $('#drop-result').classList.remove('hidden');
+    $('#drop-result').innerHTML = `<div class="note" style="border-color:#34D399"><b>Sent.</b> ${toUpload.length + p.deleted.length} file change(s) are now on GitHub as "<i>${esc(r.message)}</i>". <a class="rel-dl" href="${r.url}" target="_blank" rel="noopener">View the commit</a>. Dan can now pull it into production.</div>`;
+    document.querySelectorAll('.drop').forEach(d => d.classList.remove('busy'));
+  } catch (e) {
+    dropStatus('');
+    $('#drop-result').classList.remove('hidden');
+    $('#drop-result').innerHTML = `<div class="warn">${esc(e.message)}. Nothing was committed; drop the folder again to retry.</div>`;
+  } finally { $('#drop-send').disabled = false; $('#drop-cancel').disabled = false; }
+}
+
+function setupDropZone() {
+  document.querySelectorAll('.drop').forEach(box => {
+    const part = box.dataset.part, input = box.querySelector('input');
+    box.onclick = () => input.click();
+    box.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } };
+    input.onchange = () => {
+      // webkitRelativePath is "RootFolder/sub/file"; strip the root folder name.
+      const items = [...input.files].map(f => ({ path: f.webkitRelativePath.split('/').slice(1).join('/'), file: f })).filter(x => x.path);
+      input.value = '';
+      dropStart(part, items);
+    };
+    box.ondragover = e => { e.preventDefault(); box.classList.add('over'); };
+    box.ondragleave = () => box.classList.remove('over');
+    box.ondrop = async e => {
+      e.preventDefault(); box.classList.remove('over');
+      const entries = [...e.dataTransfer.items].map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
+      const dirs = entries.filter(en => en.isDirectory);
+      if (dirs.length !== 1) { alert('Drop one folder: the project folder itself.'); return; }
+      const out = [];
+      dropStatus('Reading the folder…'); $('#drop-panel').classList.remove('hidden'); $('#drop-title').textContent = '';
+      await walkEntry(dirs[0], '', out);
+      const root = dirs[0].name + '/';
+      dropStart(part, out.map(x => ({ path: x.path.startsWith(root) ? x.path.slice(root.length) : x.path, file: x.file })));
+    };
+  });
+  $('#drop-send').onclick = dropSend;
+  $('#drop-cancel').onclick = dropReset;
+}
+setupDropZone();
 
 async function loadDevDocs() {
   const r = await api('/api/admin/docs');
