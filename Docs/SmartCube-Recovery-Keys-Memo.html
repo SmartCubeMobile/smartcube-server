@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SmartCube Recovery Keys</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg:#F5F7F9; --paper:#FFFFFF; --ink:#18202B; --muted:#4F5B6A; --rule:#DCE2E8;
+  --accent:#0E6B58; --accent-soft:#E3F2EE; --warn:#9A4A08; --warn-soft:#FBEFE3; --key:#3E3A8C; --key-soft:#ECEBFA;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F1318; --paper:#161B22; --ink:#E6EAF0; --muted:#A3AEBB; --rule:#2A323D;
+    --accent:#5CC8AA; --accent-soft:#12302A; --warn:#F2B06B; --warn-soft:#33240F; --key:#B7B2F5; --key-soft:#24224A;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F1318; --paper:#161B22; --ink:#E6EAF0; --muted:#A3AEBB; --rule:#2A323D;
+  --accent:#5CC8AA; --accent-soft:#12302A; --warn:#F2B06B; --warn-soft:#33240F; --key:#B7B2F5; --key-soft:#24224A;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.6 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;padding-inline:16px;padding-block:28px}
+.sheet{max-width:760px;margin:0 auto;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:32px clamp(18px,5vw,44px) 30px}
+.memo{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;font-size:13px;color:var(--muted);padding-bottom:14px;border-bottom:2px solid var(--ink);margin-bottom:22px}
+.memo b{font-weight:600;color:var(--ink);text-transform:uppercase;letter-spacing:.06em;font-size:11.5px;padding-top:2px}
+h1{font:600 clamp(24px,4.2vw,30px)/1.2 "IBM Plex Serif",Georgia,serif;margin:0 0 6px;text-wrap:balance;letter-spacing:-.01em}
+.lede{color:var(--muted);margin:0 0 22px;max-width:62ch}
+h2{font:600 17px/1.3 "IBM Plex Serif",Georgia,serif;margin:24px 0 8px;text-wrap:balance}
+p{margin:0 0 10px;max-width:66ch}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:6px 0 4px}
+.box{border:1px solid var(--rule);border-radius:6px;padding:12px 14px}
+.box h3{margin:0 0 4px;font-size:14px;font-weight:600}
+.box p{font-size:14px;margin:0;color:var(--muted)}
+.box.no{background:var(--warn-soft);border-color:transparent}
+.box.no h3{color:var(--warn)}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0 8px}
+.k{background:var(--key-soft);border-radius:6px;padding:10px 12px}
+.k .n{font:500 11px/1.2 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--key)}
+.k .t{font-weight:600;margin-top:3px}
+.k .s{font-size:13px;color:var(--muted)}
+.k.pc{background:var(--accent-soft)} .k.pc .n{color:var(--accent)}
+.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);margin:2px 0 6px}
+.flow span.lock{border:1.5px solid var(--ink);color:var(--ink);border-radius:5px;padding:4px 10px;font-weight:600}
+.flow span.arrow{color:var(--muted)}
+ol{margin:6px 0 10px;padding-left:22px;max-width:66ch}
+ol li{margin:0 0 5px}
+ol li::marker{font:500 13px "IBM Plex Mono",monospace;color:var(--accent)}
+.last{border-left:3px solid var(--warn);padding:4px 0 4px 12px;margin:10px 0}
+ul.build{margin:6px 0 10px;padding-left:20px;max-width:66ch}
+ul.build li{margin:0 0 4px}
+.decide{margin-top:22px;border-top:1px solid var(--rule);padding-top:14px}
+.decide ul{list-style:none;padding:0;margin:6px 0 0;display:grid;gap:6px}
+.decide li{display:flex;gap:10px;align-items:baseline}
+.decide li::before{content:"";flex:0 0 14px;height:14px;border:1.5px solid var(--ink);border-radius:3px;transform:translateY(2px)}
+.foot{margin-top:16px;font-size:12.5px;color:var(--muted)}
+code{font:500 12.5px "IBM Plex Mono",ui-monospace,monospace}
+@media (max-width:620px){.two,.keys{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<article class="sheet">
+  <div class="memo">
+    <b>To</b><span>Dad</span>
+    <b>From</b><span>Dan</span>
+    <b>Date</b><span>29 September 2026</span>
+    <b>About</b><span>What happens when a SmartCube customer forgets their password</span>
+  </div>
+
+  <h1>Keep it locked, without making people start over</h1>
+  <p class="lede">We agree on the goal: nobody at SmartCube should ever be able to read a customer's data. This is a way to keep that promise and still let someone who forgets their password carry on.</p>
+
+  <h2>The two ideas we've had so far</h2>
+  <div class="two">
+    <div class="box no">
+      <h3>"Lose your password, start over"</h3>
+      <p>Very secure, but everyone forgets a password eventually. Losing years of bills and documents for it is harsh, and it would drive customers away with support calls we couldn't help.</p>
+    </div>
+    <div class="box no">
+      <h3>"Send us your database file"</h3>
+      <p>For us to recover anything from the file, SmartCube would need a way in. That way in works for anyone who breaks into us too, and it breaks "we don't hold your data". It also wouldn't work: the password isn't in the file.</p>
+    </div>
+  </div>
+
+  <h2>The recommendation: one lock, three keys</h2>
+  <p>Each customer's data is locked with a long random key that never leaves their PC. That key is then locked three separate times, and <strong>any one</strong> of these opens it:</p>
+  <div class="keys">
+    <div class="k"><div class="n">Key 1</div><div class="t">Their password</div><div class="s">Used every day</div></div>
+    <div class="k"><div class="n">Key 2</div><div class="t">A recovery key</div><div class="s">Shown once, printed or saved, kept by them</div></div>
+    <div class="k pc"><div class="n">Key 3</div><div class="t">Their own PC</div><div class="s">If they tick "remember this device"</div></div>
+  </div>
+  <div class="flow"><span>Any one key</span><span class="arrow">→</span><span class="lock">data key</span><span class="arrow">→</span><span>bills, profile, documents, bank transactions</span></div>
+  <p>SmartCube holds none of the three. This is how BitLocker and password managers such as 1Password and Bitwarden work.</p>
+
+  <h2>If they forget their password</h2>
+  <ol>
+    <li>They reset their account password on the website, as they can today.</li>
+    <li>On a remembered PC, the PC key opens their data and the app re-locks it with the new password. Nothing is lost.</li>
+    <li>On a new PC, the app asks for their recovery key. They enter it, choose a new password, and carry on.</li>
+  </ol>
+  <p class="last"><strong>Starting over only happens if all three are lost at once:</strong> password, recovery key and PC. That is the price of having no back door, and it's the customer's own choice how carefully they keep the recovery key.</p>
+
+  <h2>Why this is more secure than today</h2>
+  <p>At the moment the files are locked by the customer's Windows login only. This adds their SmartCube password on top, so someone at an unlocked PC, or a virus running as that user, still can't read the data unless the customer chose "remember this device".</p>
+
+  <h2>What we would build</h2>
+  <ul class="build">
+    <li>The recovery key at set-up, with a print or save option and a "have you saved it?" check. Existing users see it once on their next sign-in.</li>
+    <li>The three-key lock, with the password turned into a key using a deliberately slow method so guessing is impractical.</li>
+    <li>The bank transaction database locked the same way, which is the one part not yet encrypted.</li>
+    <li>An optional encrypted backup file for OneDrive or a USB stick, opened only by the customer's own keys.</li>
+    <li>The app locking itself after a period of inactivity.</li>
+  </ul>
+
+  <div class="decide">
+    <h2 style="margin-top:0">What I need from you</h2>
+    <ul>
+      <li>Agree the one-lock, three-key design.</li>
+      <li>Agree we never offer to recover a customer's data ourselves, and say so in the terms.</li>
+      <li>Agree the recovery key is shown once and kept by the customer, not by us.</li>
+    </ul>
+  </div>
+  <p class="foot">Already in place: account passwords are stored as a one-way scramble, two-factor sign-in is available, all app files and documents are encrypted on the PC, and the server's drive is encrypted.</p>
+</article>
+
+</body>
+</html>

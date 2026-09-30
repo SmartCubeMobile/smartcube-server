@@ -1,0 +1,163 @@
+<title>SmartCube Shared Development</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: a single reading column, memo header, then sections with one wide flow diagram and one table. */
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --fg: #1f2430;
+    --muted: #5d6474;
+    --line: #d9d6cd;
+    --accent: #1d4ed8;
+    --accent-soft: #e3ebfb;
+    --warn-soft: #fdf1dc;
+    --warn: #8a5a00;
+    --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+    --font-mono: "IBM Plex Mono", Consolas, "Courier New", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15181f; --surface: #1d2129; --fg: #e8e6e0; --muted: #a3a8b4; --line: #343a46;
+      --accent: #7ea2ff; --accent-soft: #23304d; --warn-soft: #3a2f16; --warn: #f0c36b; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15181f; --surface: #1d2129; --fg: #e8e6e0; --muted: #a3a8b4; --line: #343a46;
+    --accent: #7ea2ff; --accent-soft: #23304d; --warn-soft: #3a2f16; --warn: #f0c36b; color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; margin: 0; padding: 0 16px; }
+  .page { max-width: 720px; margin: 0 auto; padding-block: 40px 64px; }
+  header { border-bottom: 2px solid var(--fg); padding-bottom: 18px; margin-bottom: 28px; }
+  .eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+  h1 { font-family: var(--font-display); font-weight: 600; font-size: 34px; line-height: 1.15; margin: 0 0 12px; text-wrap: balance; }
+  .meta { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 14px; color: var(--muted); }
+  .meta b { color: var(--fg); font-weight: 500; }
+  h2 { font-family: var(--font-display); font-weight: 600; font-size: 23px; margin: 36px 0 10px; text-wrap: balance; }
+  p { margin: 0 0 12px; max-width: 65ch; }
+  ul, ol { margin: 0 0 12px; padding-left: 22px; max-width: 65ch; }
+  li { margin-bottom: 6px; }
+  code { font-family: var(--font-mono); font-size: 14px; background: var(--accent-soft); padding: 1px 5px; border-radius: 3px; }
+  pre { font-family: var(--font-mono); font-size: 13.5px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; overflow-x: auto; margin: 0 0 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 0 0 16px; font-size: 15px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td.mono { font-family: var(--font-mono); font-size: 13px; word-break: break-all; }
+  th { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .you { background: var(--accent-soft); font-weight: 500; }
+  .flow { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: stretch; margin: 16px 0 20px; }
+  .box { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; min-width: 0; }
+  .box h3 { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
+  .box p { font-size: 14px; color: var(--muted); margin: 0; }
+  .arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--accent); font-weight: 600; font-size: 13px; text-align: center; }
+  .arrow span { font-size: 28px; line-height: 1; }
+  .callout { background: var(--warn-soft); border-left: 4px solid var(--warn); padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 0 0 14px; max-width: 65ch; }
+  .callout b { color: var(--warn); }
+  @media (max-width: 560px) {
+    .flow { grid-template-columns: 1fr; }
+    .arrow { flex-direction: row; gap: 8px; }
+    .arrow span { transform: rotate(90deg); }
+    h1 { font-size: 28px; }
+  }
+</style>
+
+<div class="page">
+  <header>
+    <p class="eyebrow">SmartCube Mobile</p>
+    <h1>How we share development from now on</h1>
+    <div class="meta">
+      <span>From</span><b>Dan (with Claude)</b>
+      <span>To</span><b>Dad</b>
+      <span>Date</span><b>30 September 2026</b>
+      <span>Status</span><b>Live. Both shared repositories are on GitHub and production is connected to them.</b>
+    </div>
+  </header>
+
+  <h2>Your plan, as agreed</h2>
+  <p>Six components, split so nobody treads on anyone's toes. You own development of the server and the app. I own all of production and both sides of the website. Code moves one way only: I pull from development into production when I decide. Nothing goes back from production into development, and you never push into production.</p>
+
+  <table>
+    <thead><tr><th>Component</th><th>Development</th><th>Production</th></tr></thead>
+    <tbody>
+      <tr><td>Server</td><td class="you">Dad</td><td>Dan</td></tr>
+      <tr><td>Application</td><td class="you">Dad</td><td>Dan</td></tr>
+      <tr><td>Website</td><td>Dan</td><td>Dan</td></tr>
+    </tbody>
+  </table>
+
+  <div class="flow">
+    <div class="box">
+      <h3>Development (yours)</h3>
+      <p>Shared private GitHub repositories for the server and the app. You and Claude work here. Your dev server and dev database run on your PC; live users never see any of it.</p>
+    </div>
+    <div class="arrow"><span>&rarr;</span>Dan pulls<br>when ready</div>
+    <div class="box">
+      <h3>Production (mine)</h3>
+      <p>The live server on my PC, the installer users download, and the website. Pushing from here is switched off in git, so it physically can't flow backwards.</p>
+    </div>
+  </div>
+
+  <p>Server or app ideas from my side come to you first and we decide between us. The exception is an urgent production fix (data loss, server down): I can fix production directly, and you then get the same fix as a patch file to apply in development, so the next pull doesn't clash.</p>
+
+  <h2>What is already built</h2>
+  <ul>
+    <li><b>The server code is in git for the first time.</b> Passwords and API keys are kept out. You get <code>appsettings.Example.json</code> with placeholders and copy it to <code>appsettings.json</code> on your PC (that file is git-ignored).</li>
+    <li><b>Database changes travel as numbered scripts.</b> You add <code>Database\Migrations\001-add-invoice-table.sql</code>, <code>002-...</code> and so on. Each runs once, in order, on every database. If one fails on production it is rolled back and the deploy stops. <code>000-baseline.sql</code> is the live structure as of today, with no customer data in it.</li>
+    <li><b>One-command production deploy.</b> Takes the site offline, rebuilds, applies new database scripts, brings it back and checks it answers.</li>
+    <li><b>One-command pull from development.</b> Shows me what's new (and flags any database scripts), asks before changing anything, and tags a restore point so a pull can be undone.</li>
+    <li><b>A "SmartCube (dev)" run profile</b> in Visual Studio, so the server runs on <code>https://localhost:5001</code> without IIS.</li>
+    <li><b>A developer guide</b> (<code>README-DEVELOPMENT.md</code>) in the server code with the setup steps below and the rules.</li>
+  </ul>
+
+  <h2>The shared repositories</h2>
+  <p>Both are private, under the <b>SmartCubeMobile</b> organisation on GitHub. You'll get an invitation to it; accept that first.</p>
+  <table>
+    <thead><tr><th>Repository</th><th>Address</th></tr></thead>
+    <tbody>
+      <tr><td>App</td><td><a href="https://github.com/SmartCubeMobile/smartcube-app">github.com/SmartCubeMobile/smartcube-app</a></td></tr>
+      <tr><td>Server</td><td><a href="https://github.com/SmartCubeMobile/smartcube-server">github.com/SmartCubeMobile/smartcube-server</a></td></tr>
+    </tbody>
+  </table>
+  <p>Clone them somewhere outside OneDrive, on your C: drive (git doesn't work properly on exFAT drives):</p>
+  <pre>git clone https://github.com/SmartCubeMobile/smartcube-app.git C:\Dev\smartcube-app
+git clone https://github.com/SmartCubeMobile/smartcube-server.git C:\Dev\smartcube-server</pre>
+  <p>The app repository starts from a fresh snapshot of release 1.0.7 with the TrueLayer secret removed, rather than the full history. The server repository has the full history from the day it went into git. Each has a <code>README-DEVELOPMENT.md</code> with the setup steps.</p>
+  <p>Two patch files are waiting for you already. Dan will send them; apply each in the matching clone, then push:</p>
+  <table>
+    <thead><tr><th>Clone</th><th>Patch</th><th>What's in it</th></tr></thead>
+    <tbody>
+      <tr><td>smartcube-app</td><td class="mono">0001-Crypto-portfolio-P-L-historical-prices-exclusions-tr.patch</td><td>The crypto portfolio work released in 1.0.8</td></tr>
+      <tr><td>smartcube-server</td><td class="mono">0001-Docs-shared-development-memo-and-recovery-keys-memo.patch</td><td>A <code>Docs\</code> folder with this memo and the recovery-keys memo</td></tr>
+    </tbody>
+  </table>
+  <pre>cd C:\Dev\smartcube-app
+git am "C:\path\to\0001-Crypto-portfolio-P-L-historical-prices-exclusions-tr.patch"
+git push
+
+cd C:\Dev\smartcube-server
+git am "C:\path\to\0001-Docs-shared-development-memo-and-recovery-keys-memo.patch"
+git push</pre>
+  <p>That is the normal route for anything done in production: it reaches you as a patch you choose to apply, never as a push.</p>
+
+  <h2>Setting up your dev environment</h2>
+  <ol>
+    <li>In your server clone, copy <code>appsettings.Example.json</code> to <code>appsettings.json</code>.</li>
+    <li>Create your dev database, structure only, from the same folder in PowerShell:
+      <pre>.\Database\Apply-Migrations.ps1 -Server "(localdb)\MSSQLLocalDB" -Database SmartCubeDev -Create</pre>
+      LocalDB comes with Visual Studio. SQL Server Express also works: use <code>-Server ".\SQLEXPRESS"</code> and match the connection string.</li>
+    <li>Choose the <b>SmartCube (dev)</b> profile in Visual Studio and press F5. Register a test account on your own dev site at <code>/site/register.html</code>.</li>
+    <li>In the app, click the <b>Server:</b> line on the sign-in screen and enter <code>https://localhost:5001</code>. Your dev app then talks only to your dev server.</li>
+  </ol>
+  <p>Email sending and the Smart Scan key are blank in the example settings, so password-reset emails and Smart Scan don't work in dev unless you add your own.</p>
+
+  <h2>Rules that keep it safe</h2>
+  <ul>
+    <li>Never change the live database by hand, and never edit a migration script that has already been pulled. Add a new numbered one.</li>
+    <li>Make scripts safe to re-run where you can (<code>IF COL_LENGTH(...) IS NULL ALTER TABLE ...</code>). Test each one on your dev database first.</li>
+    <li>Never commit <code>appsettings.json</code>, API keys, passwords, <code>App_Data\</code> or <code>Installers\</code>.</li>
+    <li>Commit to the shared repository as often as you like. Nothing reaches users until I pull and release.</li>
+  </ul>
+
+  <h2>Where things stand</h2>
+  <div class="callout"><b>The TrueLayer client secret has moved to the server.</b> The app now asks the SmartCube server to do the bank token exchange (<code>POST /api/account/truelayer/token</code>, signed-in users only), and the server keeps the secret in its <code>appsettings.json</code> under <code>TrueLayer:ClientSecret</code>. Your dev server needs its own value there for bank connections to work in dev; without it the app reports that bank connections aren't set up. Nothing is stored on the server: the bank tokens go straight back to the user's PC.</div>
+  <p>From now on, app and server changes go through you. I pull into production when we've agreed, test, and release.</p>
+</div>
