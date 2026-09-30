@@ -8,6 +8,15 @@
     }
   },
   "profiles": {
+    "SmartCube (dev)": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "site/index.html",
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
     "IIS Express": {
       "commandName": "IIS",
       "workingDirectory": "C:\\Users\\Ray\\Documents\\Visual Studio 2022\\Projects\\SmartCubeMobileV2026",
