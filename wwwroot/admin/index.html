@@ -94,6 +94,17 @@ tr.sel{background:#182238}
 .chg div{background:var(--card2);border-radius:10px;padding:8px 10px}.chg b{display:block;font-size:20px}.chg span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .chg .add b{color:#34D399}.chg .mod b{color:#FBBF24}.chg .del b{color:#FCA5A5}
 .warn{background:#3B2A0A;color:#FBBF24;border-radius:10px;padding:8px 12px;margin:6px 0;font-size:12px}
+.links-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.links-board .grp{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+.links-board .grp h3{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.links-board .lk{display:flex;gap:6px;align-items:baseline;padding:3px 0;font-size:13px}
+.links-board .lk a{color:#60A5FA;text-decoration:none}.links-board .lk a:hover{text-decoration:underline}
+.links-board .lk .n{font-size:11px;color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.links-board .lk .x{color:var(--muted);cursor:pointer;font-size:12px;opacity:0;padding:0 2px}.links-board .lk:hover .x{opacity:1}.links-board .lk .x:hover{color:#FCA5A5}
+.mon{display:flex;flex-direction:column;gap:6px}.mon .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mon .big{font-size:22px;font-weight:700}.mon .dots{display:flex;gap:2px;align-items:flex-end;height:22px}
+.mon .dots i{display:block;width:5px;border-radius:2px;background:#34D399;min-height:4px}.mon .dots i.bad{background:#F87171;height:22px!important}
+.tag.up{background:#0A3D2E;color:#34D399}.tag.down{background:#3B1A1A;color:#FCA5A5}
 .note.good{border-color:#14532D;color:#86EFAC}.note.bad{border-color:#7F1D1D;color:#FCA5A5}
 #login{max-width:380px;margin:80px auto;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px}
 #login h2{margin:0 0 4px;text-transform:none;letter-spacing:0;color:var(--text);font-size:20px}
@@ -178,6 +189,39 @@ tr.sel{background:#182238}
   <div class="bar"><span id="rel-summary" class="dim"></span></div>
   <div class="scroll"><table id="releases"><thead><tr><th>Version</th><th>Released</th><th>Installer</th><th>Source code</th><th>Downloads</th><th>Users on it</th><th>Notes</th></tr></thead><tbody></tbody></table></div>
   <div class="note" style="font-size:12px;line-height:1.6"><b>Developer source code.</b> Each release's <i>Source</i> zip is the app exactly as released, ready for Visual Studio 2022: unzip it outside OneDrive, open <span class="mono">SmartCubeMobile.sln</span>, pick <i>Windows Machine</i> and press F5. It needs the ".NET Multi-platform App UI development" workload; full steps are in <span class="mono">README-DEVELOPER.txt</span> inside the zip. Keep the zips private: releases up to 1.0.7 contain the old TrueLayer key.</div>
+
+  <h2>Project links</h2>
+  <div id="links-board" class="links-board"></div>
+  <details style="margin-top:8px"><summary class="dim" style="cursor:pointer;font-size:12px">Add a link</summary>
+    <div class="bar" style="margin-top:8px">
+      <input id="lk-group" type="text" placeholder="Group (e.g. Hosting)" style="width:150px" list="lk-groups"><datalist id="lk-groups"></datalist>
+      <input id="lk-name" type="text" placeholder="Name" style="width:180px">
+      <input id="lk-url" type="text" placeholder="https://…" style="flex:1;min-width:220px">
+      <input id="lk-note" type="text" placeholder="Note (optional)" style="flex:1;min-width:180px">
+      <button id="lk-add">Add</button>
+    </div>
+    <div id="lk-msg" class="dim" style="font-size:12px;margin-top:4px"></div>
+  </details>
+
+  <h2>Website monitoring</h2>
+  <div class="bar"><span id="mon-summary" class="dim"></span></div>
+  <div id="mon-cards" class="drop-row"></div>
+
+  <h2>Website (Netlify)</h2>
+  <div id="nl-info" class="note" style="font-size:12px;line-height:1.7">Loading…</div>
+  <div class="drop-row">
+    <div class="drop" id="nl-drop" tabindex="0" role="button"><b>Deploy the website</b><span>drag the website folder here (the one with index.html), or click to choose it</span><input type="file" webkitdirectory multiple hidden></div>
+  </div>
+  <div id="nl-panel" class="card hidden" style="margin-top:12px">
+    <div class="bar"><b id="nl-title"></b><span id="nl-status" class="dim"></span></div>
+    <div id="nl-summary"></div>
+    <div id="nl-actions" class="bar hidden" style="margin-top:10px">
+      <input id="nl-message" type="text" placeholder="What changed? (shown in Netlify's deploy list)" style="flex:1;min-width:220px">
+      <button id="nl-send">Deploy to Netlify</button>
+      <button id="nl-cancel">Cancel</button>
+    </div>
+    <div id="nl-result" class="hidden" style="margin-top:10px"></div>
+  </div>
 
   <h2>Developer workflow</h2>
   <div class="note" style="font-size:12px;line-height:1.7">
@@ -290,6 +334,7 @@ tr.sel{background:#182238}
 <aside id="detail"><div id="d-body"></div></aside>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -370,7 +415,7 @@ async function load() {
   $('#cards').innerHTML = c.map(([l,v,s,k]) => `<div class="card ${k}"><div class="l">${esc(l)}</div><div class="v">${esc(v)}</div><div class="s">${esc(s)}</div></div>`).join('');
   $('#foot').textContent = 'Server time ' + fmt(o.serverTimeUtc) + ' (all times shown in your local time zone)';
 
-  await Promise.all([loadHealth(), loadTickets(), loadReleases(), loadDevDocs(), loadOps(), loadTariffs(), loadUsers(), loadScans(), loadLogins(), loadNotes()]);
+  await Promise.all([loadHealth(), loadTickets(), loadReleases(), loadDevDocs(), loadOps(), loadLinks(), loadMonitor(), loadNetlify(), loadTariffs(), loadUsers(), loadScans(), loadLogins(), loadNotes()]);
   $('#foot').textContent += ' · last refreshed ' + new Date().toLocaleTimeString('en-GB');
   initChat();
 }
@@ -744,6 +789,123 @@ function setupDropZone() {
   $('#drop-cancel').onclick = dropReset;
 }
 setupDropZone();
+
+// ---------------- Project links ----------------
+async function loadLinks() {
+  const r = await api('/api/admin/hub/links');
+  if (!r.ok) return;
+  const groups = {};
+  r.links.forEach(l => (groups[l.group] = groups[l.group] || []).push(l));
+  $('#lk-groups').innerHTML = Object.keys(groups).map(g => `<option value="${esc(g)}">`).join('');
+  $('#links-board').innerHTML = Object.keys(groups).map(g => `<div class="grp"><h3>${esc(g)}</h3>` +
+    groups[g].map(l => `<div class="lk"><a href="${esc(l.url)}" target="_blank" rel="noopener" title="${esc(l.url)}">${esc(l.name)}</a><span class="n" title="${esc(l.note || '')}">${esc(l.note || '')}</span><span class="x" data-id="${l.id}" title="Remove this link">✕</span></div>`).join('') + '</div>').join('');
+  document.querySelectorAll('#links-board .x').forEach(x => x.onclick = async () => {
+    if (!confirm('Remove this link from the board?')) return;
+    await fetch('/api/admin/hub/links/' + x.dataset.id, { method: 'DELETE', credentials: 'same-origin' });
+    loadLinks();
+  });
+}
+$('#lk-add').onclick = async () => {
+  const r = await api('/api/admin/hub/links', { group: $('#lk-group').value, name: $('#lk-name').value, url: $('#lk-url').value, note: $('#lk-note').value });
+  $('#lk-msg').textContent = r.ok ? 'Added.' : (r.error || 'Failed');
+  if (r.ok) { ['#lk-name', '#lk-url', '#lk-note'].forEach(s => $(s).value = ''); loadLinks(); }
+};
+
+// ---------------- Website monitoring ----------------
+async function loadMonitor() {
+  const r = await api('/api/admin/hub/monitor');
+  if (!r.ok) return;
+  if (!r.targets.length) { $('#mon-summary').textContent = 'No checks recorded yet (the first runs about 30 seconds after the server starts).'; $('#mon-cards').innerHTML = ''; return; }
+  const down = r.targets.filter(t => !t.up);
+  $('#mon-summary').textContent = down.length ? `${down.map(t => t.name).join(', ')} DOWN · checked every ${r.intervalMinutes} min` : `All up · checked every ${r.intervalMinutes} min · last 24 h`;
+  $('#mon-cards').innerHTML = r.targets.map(t => {
+    const maxMs = Math.max(200, ...t.recent.map(c => c.ms));
+    const dots = t.recent.map(c => `<i class="${c.ok ? '' : 'bad'}" style="height:${Math.max(4, Math.round(22 * c.ms / maxMs))}px" title="${c.ok ? c.ms + ' ms' : 'down'}"></i>`).join('');
+    return `<div class="card mon"><div class="row"><b>${esc(t.name)}</b><span class="tag ${t.up ? 'up' : 'down'}">${t.up ? 'UP' : 'DOWN'}</span><span class="dim">${esc(fmt(t.checkedAt))}</span></div>
+      <div class="row"><span class="big">${t.uptime24h}%</span><span class="dim">uptime · ${t.avgMs} ms avg · now ${t.up ? t.ms + ' ms' : esc(t.error || 'no response')}</span></div>
+      <div class="dots" title="Last ${t.recent.length} checks: bar height = response time, red = down">${dots}</div>
+      ${t.lastFailure ? `<div class="dim" style="font-size:11px">Last problem ${esc(fmt(t.lastFailure.at))}: ${esc(t.lastFailure.error || '')}</div>` : '<div class="dim" style="font-size:11px">No problems in the last 24 h</div>'}</div>`;
+  }).join('');
+}
+
+// ---------------- Netlify: drag the website folder, deploy ----------------
+let NL = null;
+const NL_SKIP = new Set(['.git', 'node_modules', '.vs']);
+async function loadNetlify() {
+  const r = await api('/api/admin/hub/netlify/site');
+  if (!r.ok) return;
+  NL_CAN = !!r.canDeploy;
+  if (!r.configured) { $('#nl-info').innerHTML = 'Netlify isn’t connected yet: add <span class="mono">Netlify:Token</span> and <span class="mono">Netlify:SiteId</span> to the server’s appsettings.json and redeploy. Until then, deploy from the Netlify dashboard.'; }
+  else if (r.error) { $('#nl-info').innerHTML = `<span class="warn">${esc(r.error)}</span>`; }
+  else $('#nl-info').innerHTML = `Site <b>${esc(r.name)}</b> · <a class="rel-dl" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.url)}</a> · <a class="rel-dl" href="${esc(r.adminUrl || 'https://app.netlify.com')}" target="_blank" rel="noopener">Netlify dashboard</a><br>Live version published ${r.publishedAt ? esc(fmt(r.publishedAt)) : 'unknown'}${r.publishedTitle ? ' · "' + esc(r.publishedTitle) + '"' : ''}. Drop the website folder (<span class="mono">SmartCube-Mobile-Netlify- Live</span>) below to publish a new version; Netlify keeps every previous deploy, so it can be rolled back from its dashboard.`;
+  $('#nl-drop').classList.toggle('busy', !NL_CAN);
+  if (!NL_CAN) $('#nl-drop').title = 'Only the website owner can deploy';
+}
+let NL_CAN = false;
+async function nlStart(items) {
+  const files = items.filter(x => !x.path.split('/').some(p => NL_SKIP.has(p)) && !x.path.endsWith('.DS_Store') && x.path.toLowerCase() !== 'thumbs.db');
+  if (!files.some(x => x.path.toLowerCase() === 'index.html')) { alert('That folder has no index.html at its top level. Drop the website folder itself.'); return; }
+  NL = { files };
+  $('#nl-panel').classList.remove('hidden'); $('#nl-result').classList.add('hidden'); $('#nl-actions').classList.remove('hidden');
+  $('#nl-title').textContent = 'Website folder'; $('#nl-status').textContent = '';
+  const bytes = files.reduce((a, x) => a + x.file.size, 0);
+  const byExt = {};
+  files.forEach(x => { const e = (x.path.split('.').pop() || '').toLowerCase(); byExt[e] = (byExt[e] || 0) + 1; });
+  $('#nl-summary').innerHTML = `<div class="dim" style="font-size:12px">${files.length} files, ${(bytes / 1048576).toFixed(1)} MB: ${Object.entries(byExt).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([e, n]) => `${n} .${esc(e)}`).join(', ')}</div>
+    <div style="font-size:12px;margin-top:4px">${files.slice(0, 40).map(x => `<span class="mono">${esc(x.path)}</span>`).join(' · ')}${files.length > 40 ? ' …' : ''}</div>`;
+}
+async function nlSend() {
+  if (!NL) return;
+  $('#nl-send').disabled = true; $('#nl-cancel').disabled = true;
+  try {
+    $('#nl-status').textContent = 'Zipping…';
+    const zip = new JSZip();
+    for (const x of NL.files) zip.file(x.path, x.file);
+    const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+    if (blob.size > 28 * 1048576) throw new Error('The site zip is ' + (blob.size / 1048576).toFixed(0) + ' MB; the limit here is 28 MB. Deploy from the Netlify dashboard instead.');
+    $('#nl-status').textContent = `Uploading ${(blob.size / 1048576).toFixed(1)} MB…`;
+    const res = await fetch('/api/admin/hub/netlify/deploy?title=' + encodeURIComponent($('#nl-message').value.trim()), { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/zip' }, body: blob });
+    const r = await res.json();
+    if (!r.ok) throw new Error(r.error || 'Deploy failed');
+    $('#nl-status').textContent = 'Netlify is processing the deploy…';
+    let state = r.state, info = r, tries = 0;
+    while (!['ready', 'error'].includes(state) && tries++ < 60) {
+      await new Promise(w => setTimeout(w, 3000));
+      const s = await api('/api/admin/hub/netlify/deploy/' + r.id);
+      if (s.ok) { state = s.state; info = s; }
+    }
+    $('#nl-status').textContent = '';
+    $('#nl-actions').classList.add('hidden'); $('#nl-result').classList.remove('hidden');
+    $('#nl-result').innerHTML = state === 'ready'
+      ? `<div class="note" style="border-color:#34D399"><b>Published.</b> The website is live with this version: <a class="rel-dl" href="${esc(info.url || 'https://www.smartcubemobile.com')}" target="_blank" rel="noopener">open it</a>. Cloudflare may serve the old page for a minute or two.</div>`
+      : `<div class="warn">Netlify reported "${esc(state)}"${info.error ? ': ' + esc(info.error) : ''}. Check the deploy list in the Netlify dashboard.</div>`;
+    loadNetlify();
+  } catch (e) {
+    $('#nl-status').textContent = '';
+    $('#nl-result').classList.remove('hidden');
+    $('#nl-result').innerHTML = `<div class="warn">${esc(e.message)}</div>`;
+  } finally { $('#nl-send').disabled = false; $('#nl-cancel').disabled = false; }
+}
+function setupNetlify() {
+  const box = $('#nl-drop'), input = box.querySelector('input');
+  box.onclick = () => { if (NL_CAN) input.click(); };
+  box.onkeydown = e => { if ((e.key === 'Enter' || e.key === ' ') && NL_CAN) { e.preventDefault(); input.click(); } };
+  input.onchange = () => { const items = [...input.files].map(f => ({ path: f.webkitRelativePath.split('/').slice(1).join('/'), file: f })).filter(x => x.path); input.value = ''; nlStart(items); };
+  box.ondragover = e => { e.preventDefault(); if (NL_CAN) box.classList.add('over'); };
+  box.ondragleave = () => box.classList.remove('over');
+  box.ondrop = async e => {
+    e.preventDefault(); box.classList.remove('over');
+    if (!NL_CAN) return;
+    const dirs = [...e.dataTransfer.items].map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(en => en && en.isDirectory);
+    if (dirs.length !== 1) { alert('Drop one folder: the website folder itself.'); return; }
+    const out = []; await walkEntry(dirs[0], '', out);
+    const root = dirs[0].name + '/';
+    nlStart(out.map(x => ({ path: x.path.startsWith(root) ? x.path.slice(root.length) : x.path, file: x.file })));
+  };
+  $('#nl-send').onclick = nlSend;
+  $('#nl-cancel').onclick = () => { NL = null; $('#nl-panel').classList.add('hidden'); };
+}
+setupNetlify();
 
 // ---------------- Production: what's waiting on GitHub, and the operator's buttons ----------------
 let OPS_TIMER = null;

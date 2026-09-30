@@ -71,6 +71,7 @@ namespace SmartCubeMobileV2026
             });
 
             services.AddRazorPages();
+            services.AddHostedService<Services.SiteMonitor>();   // admin page "Website monitoring"
 
             services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, Services.SmtpEmailSender>();
 
