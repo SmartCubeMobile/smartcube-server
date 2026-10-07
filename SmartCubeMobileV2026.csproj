@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\..\Source code\Images\smartcubemobilehorizontal.png" Link="wwwroot\images\smartcubemobilehorizontal.png" />
+    <Content Include="Images\smartcubemobilehorizontal.png" Link="wwwroot\images\smartcubemobilehorizontal.png" />
   </ItemGroup>
 
   <ItemGroup>

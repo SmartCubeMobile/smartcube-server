@@ -1,4 +1,4 @@
-<title>SmartCube Shared Development</title>
+﻿<title>SmartCube Shared Development</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
   /* Layout: a single reading column, memo header, then sections with one wide flow diagram and one table. */
@@ -104,7 +104,7 @@
     <li><b>Database changes travel as numbered scripts.</b> You add <code>Database\Migrations\001-add-invoice-table.sql</code>, <code>002-...</code> and so on. Each runs once, in order, on every database. If one fails on production it is rolled back and the deploy stops. <code>000-baseline.sql</code> is the live structure as of today, with no customer data in it.</li>
     <li><b>One-command production deploy.</b> Takes the site offline, rebuilds, applies new database scripts, brings it back and checks it answers.</li>
     <li><b>One-command pull from development.</b> Shows me what's new (and flags any database scripts), asks before changing anything, and tags a restore point so a pull can be undone.</li>
-    <li><b>A "SmartCube (dev)" run profile</b> in Visual Studio, so the server runs on <code>https://localhost:5001</code> without IIS.</li>
+    <li><b>A "SmartCube (dev)" run profile</b> in Visual Studio, so the server runs on <code>http://localhost:5000</code> without IIS.</li>
     <li><b>A developer guide</b> (<code>README-DEVELOPMENT.md</code>) in the server code with the setup steps below and the rules.</li>
   </ul>
 
@@ -145,7 +145,7 @@ git push</pre>
       <pre>.\Database\Apply-Migrations.ps1 -Server "(localdb)\MSSQLLocalDB" -Database SmartCubeDev -Create</pre>
       LocalDB comes with Visual Studio. SQL Server Express also works: use <code>-Server ".\SQLEXPRESS"</code> and match the connection string.</li>
     <li>Choose the <b>SmartCube (dev)</b> profile in Visual Studio and press F5. Register a test account on your own dev site at <code>/site/register.html</code>.</li>
-    <li>In the app, click the <b>Server:</b> line on the sign-in screen and enter <code>https://localhost:5001</code>. Your dev app then talks only to your dev server.</li>
+    <li>In the app, click the <b>Server:</b> line on the sign-in screen and enter <code>http://localhost:5000</code>. Your dev app then talks only to your dev server.</li>
   </ol>
   <p>Email sending and the Smart Scan key are blank in the example settings, so password-reset emails and Smart Scan don't work in dev unless you add your own.</p>
 

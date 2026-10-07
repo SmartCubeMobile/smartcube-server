@@ -1,4 +1,4 @@
-# SmartCube: shared development
+﻿# SmartCube: shared development
 
 ## Who owns what
 
@@ -29,13 +29,13 @@ sends the same fix to development as a patch for Dad to apply, so the next pull 
    LocalDB comes with Visual Studio. SQL Server Express works too: use `-Server ".\SQLEXPRESS"` and
    change the connection string in `appsettings.json` to match.
 3. In Visual Studio choose the **SmartCube (dev)** profile and press F5. The server runs at
-   `https://localhost:5001`; the website is at `/site/index.html`.
+   `http://localhost:5000`; the website is at `/site/index.html`.
 4. Register a test account on your dev site (`/site/register.html`).
 
 ## Pointing the dev app at the dev server
 
 On the app's sign-in screen, click the **Server:** line at the bottom and enter
-`https://localhost:5001`. Blank resets it to the live server. Your dev app and dev server then never
+`http://localhost:5000`. Blank resets it to the live server. Your dev app and dev server then never
 touch live users.
 
 ## Changing the database
