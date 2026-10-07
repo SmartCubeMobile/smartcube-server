@@ -149,6 +149,7 @@ namespace SmartCubeMobileV2026.Controllers
                     lastLogin = u.LastLogOnTime == default ? (DateTime?)null : u.LastLogOnTime,
                     locked = u.LockoutEnd.HasValue && u.LockoutEnd > DateTimeOffset.UtcNow,
                     admin = u.Administrator,
+                    testUser = u.IsTestUser,
                     mustChangePassword = claims.Any(c => c.UserId == u.Id && c.ClaimType == "must_change_password"),
                     appVersion = versions.FirstOrDefault(v => v.UserId == u.Id)?.AppVersion,
                     devices = devices.Count(d => d.UserId == u.Id),

@@ -786,6 +786,7 @@ namespace SmartCubeMobileV2026.Controllers
                 smartScanLicence = await ActiveLicence(user.Email),
                 mustChangePassword = claims.Any(c => c.Type == MustChangeClaim),
                 twoFactorEnabled = user.TwoFactorEnabled,
+                testUser = user.IsTestUser,
                 needsPin,
                 deviceKey,
             };

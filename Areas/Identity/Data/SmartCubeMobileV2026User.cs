@@ -29,5 +29,7 @@ namespace SmartCubeMobileV2026.Areas.Identity.Data
         public bool MultipleMeter { get; set; }
         [PersonalData]
         public bool Administrator { get; set; }
+        // Flagged by an admin: this account's app reports its activity for testing (see TestActivityController).
+        public bool IsTestUser { get; set; }
     }
 }

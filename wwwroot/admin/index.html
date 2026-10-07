@@ -333,6 +333,22 @@ tr.sel{background:#182238}
 
 <aside id="detail"><div id="d-body"></div></aside>
 
+  <h2>Test activity</h2>
+  <div class="note" style="font-size:12px;line-height:1.7">
+    Flag an account with <b>Make test user</b> (open it in Users). While signed in as that account the app shows a "test account" banner and reports what it <b>adds, changes, removes and uploads</b>, including copies of documents. Passwords, tokens, keys and PINs are never sent. Nothing is collected for any other account. Events and files are deleted after 30 days. A flag takes effect the next time the user signs in.
+  </div>
+  <div class="bar">
+    <select id="ta-user"></select>
+    <select id="ta-area"><option value="">All areas</option></select>
+    <label class="dim" style="font-size:12px"><input type="checkbox" id="ta-live" checked style="vertical-align:middle"> live</label>
+    <button class="sec" id="ta-refresh">Refresh</button>
+    <button class="warn" id="ta-clear">Clear this user's activity</button>
+    <span id="ta-summary" class="dim"></span>
+  </div>
+  <div class="scroll" style="max-height:420px;overflow:auto"><table id="ta-events"><thead><tr><th>When</th><th>Area</th><th>Action</th><th>What</th><th>Details</th></tr></thead><tbody></tbody></table></div>
+  <h3 style="font-size:13px;margin:14px 0 6px">Uploaded documents</h3>
+  <div class="scroll"><table id="ta-files"><thead><tr><th>When</th><th>File</th><th>Area</th><th>Size</th><th></th></tr></thead><tbody></tbody></table></div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
@@ -415,7 +431,7 @@ async function load() {
   $('#cards').innerHTML = c.map(([l,v,s,k]) => `<div class="card ${k}"><div class="l">${esc(l)}</div><div class="v">${esc(v)}</div><div class="s">${esc(s)}</div></div>`).join('');
   $('#foot').textContent = 'Server time ' + fmt(o.serverTimeUtc) + ' (all times shown in your local time zone)';
 
-  await Promise.all([loadHealth(), loadTickets(), loadReleases(), loadDevDocs(), loadOps(), loadLinks(), loadMonitor(), loadNetlify(), loadTariffs(), loadUsers(), loadScans(), loadLogins(), loadNotes()]);
+  await Promise.all([loadHealth(), loadTickets(), loadReleases(), loadDevDocs(), loadOps(), loadTestActivity(), loadLinks(), loadMonitor(), loadVisits(), loadNetlify(), loadTariffs(), loadUsers(), loadScans(), loadLogins(), loadNotes()]);
   $('#foot').textContent += ' · last refreshed ' + new Date().toLocaleTimeString('en-GB');
   initChat();
 }
@@ -819,6 +835,45 @@ async function loadMonitor() {
   const down = r.targets.filter(t => !t.up);
   $('#mon-summary').textContent = down.length ? `${down.map(t => t.name).join(', ')} DOWN · checked every ${r.intervalMinutes} min` : `All up · checked every ${r.intervalMinutes} min · last 24 h`;
   $('#mon-cards').innerHTML = r.targets.map(t => {
+// ---------------- Test activity ----------------
+let TA_TIMER = null;
+const TA_KIND = { add: 'fix', edit: 'website', remove: 'bug', upload: 'task' };
+async function loadTestActivity() {
+  const u = await api('/api/admin/test/users');
+  if (!u.ok) return;
+  const sel = $('#ta-user'), keep = sel.value;
+  sel.innerHTML = u.users.length ? u.users.map(x => `<option value="${esc(x.id)}">${esc(x.username)}${x.active ? ' (test user)' : ' (no longer flagged)'} · ${x.events} events, ${x.files} files</option>`).join('') : '<option value="">No test users yet</option>';
+  if (keep && [...sel.options].some(o => o.value === keep)) sel.value = keep;
+  await loadTestEvents();
+}
+async function loadTestEvents() {
+  const userId = $('#ta-user').value;
+  if (!userId) { $('#ta-events tbody').innerHTML = '<tr><td colspan="5" class="dim">Flag a user as a test user to see their activity here.</td></tr>'; $('#ta-files tbody').innerHTML = ''; $('#ta-summary').textContent = ''; return; }
+  const area = $('#ta-area').value;
+  const [r, f] = await Promise.all([api(`/api/admin/test/events?userId=${encodeURIComponent(userId)}&area=${encodeURIComponent(area)}&limit=300`), api(`/api/admin/test/files?userId=${encodeURIComponent(userId)}`)]);
+  if (!r.ok) return;
+  const cur = $('#ta-area').value;
+  $('#ta-area').innerHTML = '<option value="">All areas</option>' + r.areas.map(a => `<option ${a === cur ? 'selected' : ''}>${esc(a)}</option>`).join('');
+  $('#ta-summary').textContent = `${r.events.length} shown · updated ${new Date().toLocaleTimeString('en-GB')}`;
+  const pretty = d => { if (!d) return ''; try { return JSON.stringify(JSON.parse(d), null, 2); } catch { return d; } };
+  $('#ta-events tbody').innerHTML = r.events.length ? r.events.map(e => `<tr>
+    <td style="white-space:nowrap">${esc(fmt(e.at))}</td><td class="mono">${esc(e.area)}</td>
+    <td><span class="tag ${TA_KIND[e.kind] || 'note'}">${esc(e.kind)}</span></td><td>${esc(e.summary)}</td>
+    <td>${e.data ? `<details><summary class="dim" style="cursor:pointer">show</summary><pre style="white-space:pre-wrap;font-size:11px;max-height:260px;overflow:auto;margin:6px 0 0">${esc(pretty(e.data))}</pre></details>` : ''}</td></tr>`).join('')
+    : '<tr><td colspan="5" class="dim">Nothing reported yet. Sign in as this user in the app and make a change.</td></tr>';
+  if (f.ok) $('#ta-files tbody').innerHTML = f.files.length ? f.files.map(x => `<tr><td>${esc(fmt(x.at))}</td><td>${esc(x.name)}${x.note ? ' <span class="dim">' + esc(x.note) + '</span>' : ''}</td><td class="mono">${esc(x.area || '')}</td><td>${x.sizeBytes < 1048576 ? Math.round(x.sizeBytes / 1024) + ' KB' : (x.sizeBytes / 1048576).toFixed(1) + ' MB'}</td><td>${x.exists ? `<a class="rel-dl" href="/api/admin/test/file/${x.id}">Download</a>` : '<span class="dim">purged</span>'}</td></tr>`).join('') : '<tr><td colspan="5" class="dim">No documents uploaded</td></tr>';
+}
+$('#ta-user').onchange = () => { $('#ta-area').value = ''; loadTestEvents(); };
+$('#ta-area').onchange = loadTestEvents;
+$('#ta-refresh').onclick = loadTestActivity;
+$('#ta-clear').onclick = async () => {
+  const userId = $('#ta-user').value; if (!userId) return;
+  if (!confirm('Delete everything recorded for this user (events and uploaded files)?')) return;
+  await api('/api/admin/test/clear/' + encodeURIComponent(userId), {});
+  loadTestActivity();
+};
+TA_TIMER = setInterval(() => { if ($('#ta-live').checked && !$('#app').classList.contains('hidden') && $('#ta-user').value) loadTestEvents(); }, 8000);
+
     const maxMs = Math.max(200, ...t.recent.map(c => c.ms));
     const dots = t.recent.map(c => `<i class="${c.ok ? '' : 'bad'}" style="height:${Math.max(4, Math.round(22 * c.ms / maxMs))}px" title="${c.ok ? c.ms + ' ms' : 'down'}"></i>`).join('');
     return `<div class="card mon"><div class="row"><b>${esc(t.name)}</b><span class="tag ${t.up ? 'up' : 'down'}">${t.up ? 'UP' : 'DOWN'}</span><span class="dim">${esc(fmt(t.checkedAt))}</span></div>
@@ -1100,7 +1155,7 @@ async function loadUsers() {
   USERS = r.users;
   $('#ucount').textContent = r.users.length + ' shown';
   $('#users tbody').innerHTML = r.users.map(u => `<tr class="row" data-id="${esc(u.id)}">
-    <td><b>${esc(u.username)}</b>${u.admin ? ' <span class="tag admin">admin</span>' : ''}<br><span class="dim">${esc(u.fullName || '')}</span></td>
+    <td><b>${esc(u.username)}</b>${u.admin ? ' <span class="tag admin">admin</span>' : ''}${u.testUser ? ' <span class="tag website" title="Test user: the app reports what this account does">test</span>' : ''}<br><span class="dim">${esc(u.fullName || '')}</span></td>
     <td>${esc(u.email)}</td>
     <td><span class="tag ${u.plan.toLowerCase()}">${esc(u.plan)}</span></td>
     <td>${u.subscriber ? fmtD(u.expires) : '<span class="dim">—</span>'}</td>
@@ -1143,7 +1198,7 @@ async function openUser(id) {
   const lic = r.licences[0];
   $('#d-body').innerHTML = `
     <button class="sec" id="d-close" style="float:right">Close</button>
-    <h3>${esc(u.username)} ${u.admin ? '<span class="tag admin">admin</span>' : ''} ${u.locked ? '<span class="tag bad">deactivated</span>' : ''}</h3>
+    <h3>${esc(u.username)} ${u.admin ? '<span class="tag admin">admin</span>' : ''} ${u.testUser ? '<span class="tag website">test user</span>' : ''} ${u.locked ? '<span class="tag bad">deactivated</span>' : ''}</h3>
     <div class="muted">${esc(u.fullName || '')} · ${esc(u.email)}</div>
     <div class="kv">
       <b>Plan</b><span><span class="tag ${u.plan.toLowerCase()}">${esc(u.plan)}</span> ${u.subscriber ? 'until ' + fmtD(u.expires) : ''}</span>
@@ -1227,3 +1282,11 @@ setInterval(() => { if (!$('#app').classList.contains('hidden')) { loadHealth();
 </script>
 </body>
 </html>
+    <div class="actions">
+      <button class="${u.testUser ? 'warn' : 'sec'}" id="a-test" title="While signed in as a test user, the app reports what they add, change, remove and upload, shown under Test activity. Takes effect the next time they sign in.">${u.testUser ? 'Stop test tracking' : 'Make test user'}</button>
+    </div>
+  $('#a-test').onclick = () => {
+    const on = !u.testUser;
+    if (on && !confirm('Make ' + u.username + ' a test user?\n\nWhile signed in as this account, the app will send what they add, change, remove and upload (including copies of documents) to this server, and show a "test account" banner. Only do this for your own test accounts.')) return;
+    act(`/api/admin/test/flag/${id}`, { on }, x => x.testUser ? 'Now a test user. Their app starts reporting the next time they sign in.' : 'No longer a test user. The app stops reporting.').then(() => { loadTestActivity(); setTimeout(() => openUser(id), 400); });
+  };
