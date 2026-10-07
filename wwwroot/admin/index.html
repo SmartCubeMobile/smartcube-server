@@ -273,6 +273,7 @@ tr.sel{background:#182238}
     <div class="drop" data-part="app" tabindex="0" role="button"><b>App</b><span>the folder containing SmartCubeMobile.csproj</span><input type="file" webkitdirectory multiple hidden></div>
     <div class="drop" data-part="server" tabindex="0" role="button"><b>Server</b><span>the folder containing SmartCubeMobileV2026.csproj</span><input type="file" webkitdirectory multiple hidden></div>
   </div>
+  <div class="card" id="ops-backups" style="margin-bottom:10px"><b>Backups</b> <span class="dim">loading…</span></div>
   <div id="drop-panel" class="card hidden" style="margin-top:12px">
     <div class="bar"><b id="drop-title"></b><span id="drop-status" class="dim"></span></div>
     <div id="drop-summary"></div>
@@ -431,7 +432,7 @@ async function load() {
   $('#cards').innerHTML = c.map(([l,v,s,k]) => `<div class="card ${k}"><div class="l">${esc(l)}</div><div class="v">${esc(v)}</div><div class="s">${esc(s)}</div></div>`).join('');
   $('#foot').textContent = 'Server time ' + fmt(o.serverTimeUtc) + ' (all times shown in your local time zone)';
 
-  await Promise.all([loadHealth(), loadTickets(), loadReleases(), loadDevDocs(), loadOps(), loadTestActivity(), loadLinks(), loadMonitor(), loadVisits(), loadNetlify(), loadTariffs(), loadUsers(), loadScans(), loadLogins(), loadNotes()]);
+  await Promise.all([loadHealth(), loadTickets(), loadReleases(), loadDevDocs(), loadOps(), loadBackups(), loadTestActivity(), loadLinks(), loadMonitor(), loadVisits(), loadNetlify(), loadTariffs(), loadUsers(), loadScans(), loadLogins(), loadNotes()]);
   $('#foot').textContent += ' · last refreshed ' + new Date().toLocaleTimeString('en-GB');
   initChat();
 }
@@ -1032,6 +1033,24 @@ async function loadTariffs() {
   if (!r.ok) return;
   const done = r.regions.filter(x => x.tariffCount > 0);
   const doneElec = r.regions.filter(x => x.elecTariffCount > 0);
+async function loadBackups() {
+  const r = await api('/api/admin/backups');
+  const el = $('#ops-backups');
+  if (!r.ok) { el.innerHTML = '<b>Backups</b> <span class="dim">not available</span>'; return; }
+  const mb = b => b < 1048576 ? Math.round(b / 1024) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
+  const state = !r.lastFull ? '<span class="tag down">no backup yet</span>' : r.stale ? '<span class="tag website">stale</span>' : '<span class="tag up">OK</span>';
+  const rt = r.lastRestoreTest;
+  el.innerHTML = `<b>Backups</b> ${state}
+    <div style="font-size:12px;margin-top:6px;line-height:1.7">
+      Last full backup: ${r.lastFull ? esc(fmt(r.lastFull.at)) + ' <span class="dim">(' + mb(r.lastFull.bytes) + ', verified)</span>' : '—'} ·
+      last log backup (restore to within 15 min): ${r.lastLog ? esc(fmt(r.lastLog.at)) : '—'}<br>
+      Restore test: ${rt ? (rt.ok ? '<span class="tag up">passed</span> ' : '<span class="tag down">FAILED</span> ') + esc(fmt(rt.at)) + ' <span class="dim">' + esc(rt.message || '') + '</span>' : '<span class="dim">not run yet</span>'}<br>
+      Last 24 h: ${r.last24h.fulls} full, ${r.last24h.logs} log, ${r.last24h.failures} failure(s)${r.lastProblem ? ' · last problem ' + esc(fmt(r.lastProblem.at)) + ': ' + esc(r.lastProblem.message || '') : ''}
+      ${r.stale && r.lastFull ? '<br><span class="dim">Backups run only while the production PC is on and signed in; none has run for over 3 hours.</span>' : ''}
+      <br><span class="dim">Stored on the production PC (C:) and mirrored to its second disk (D:). No offsite copy yet.</span>
+    </div>`;
+}
+
   const doneGas = r.regions.filter(x => x.gasTariffCount > 0);
   const oldest = done.length ? done.reduce((a, x) => new Date(x.fetchedAt) < new Date(a.fetchedAt) ? x : a) : null;
   $('#tariff-summary').textContent = 'Dual fuel: ' + done.length + ' of ' + r.regions.length + ' regions · Electricity only: ' + doneElec.length + ' of ' + r.regions.length
