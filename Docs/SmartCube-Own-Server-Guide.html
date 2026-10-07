@@ -1,0 +1,131 @@
+<title>Your Own SmartCube Server</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: one reading column; the steps are a real sequence, so they are numbered cards with copy-ready commands. */
+  :root {
+    --bg: #f7f6f2; --surface: #ffffff; --fg: #1f2430; --muted: #5d6474; --line: #d9d6cd;
+    --accent: #1d4ed8; --accent-soft: #e3ebfb; --good-soft: #e2f3e8; --good: #1c6b3a; --warn-soft: #fdf1dc; --warn: #8a5a00;
+    --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+    --font-mono: "IBM Plex Mono", Consolas, "Courier New", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15181f; --surface: #1d2129; --fg: #e8e6e0; --muted: #a3a8b4; --line: #343a46;
+      --accent: #7ea2ff; --accent-soft: #23304d; --good-soft: #17301f; --good: #7fd49b; --warn-soft: #3a2f16; --warn: #f0c36b; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15181f; --surface: #1d2129; --fg: #e8e6e0; --muted: #a3a8b4; --line: #343a46;
+    --accent: #7ea2ff; --accent-soft: #23304d; --good-soft: #17301f; --good: #7fd49b; --warn-soft: #3a2f16; --warn: #f0c36b; color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15.5px; line-height: 1.55; margin: 0; padding: 0 16px; }
+  .page { max-width: 720px; margin: 0 auto; padding-block: 36px 56px; }
+  header { border-bottom: 2px solid var(--fg); padding-bottom: 16px; margin-bottom: 22px; }
+  .eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+  h1 { font-family: var(--font-display); font-weight: 600; font-size: 32px; line-height: 1.15; margin: 0 0 10px; text-wrap: balance; }
+  .lede { color: var(--muted); margin: 0; max-width: 62ch; }
+  h2 { font-family: var(--font-display); font-weight: 600; font-size: 21px; margin: 30px 0 10px; text-wrap: balance; }
+  p { margin: 0 0 10px; max-width: 65ch; }
+  ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 0 0 14px; }
+  ol.steps > li { counter-increment: step; position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px 12px 58px; margin-bottom: 12px; }
+  ol.steps > li::before { content: counter(step); position: absolute; left: 14px; top: 13px; width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-weight: 600; display: grid; place-items: center; }
+  li h3 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+  li p { font-size: 14.5px; margin-bottom: 8px; }
+  code { font-family: var(--font-mono); font-size: 13px; background: var(--accent-soft); padding: 1px 5px; border-radius: 3px; }
+  .cmd { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0 8px; }
+  .cmd pre { flex: 1; min-width: 0; margin: 0; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.45; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; overflow-x: auto; white-space: pre; }
+  .cmd button { flex: none; font: inherit; font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border: 0; border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+  .cmd button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .expect { background: var(--good-soft); color: var(--good); border-radius: 6px; padding: 7px 11px; font-size: 13.5px; margin: 6px 0 2px; }
+  .callout { background: var(--warn-soft); border-left: 4px solid var(--warn); padding: 11px 15px; border-radius: 0 6px 6px 0; margin: 0 0 14px; max-width: 65ch; font-size: 14.5px; }
+  .callout b { color: var(--warn); }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .scroll { overflow-x: auto; }
+  a { color: var(--accent); }
+  @media (max-width: 520px) { h1 { font-size: 26px; } ol.steps > li { padding-left: 52px; } }
+</style>
+
+<div class="page">
+  <header>
+    <p class="eyebrow">SmartCube Mobile &middot; for Dad</p>
+    <h1>Run your own SmartCube server</h1>
+    <p class="lede">Your app currently talks to Dan's live server, which only works while his laptop is on. These steps put a complete private copy of the server on your own PC, with an empty database, so you can work any time and never touch real users.</p>
+  </header>
+
+  <div class="callout"><b>The only time you need Dan's laptop</b> is step 1, to download the zip files. Ask him to leave it on for ten minutes, or have him send you the two zips another way.</div>
+
+  <h2>One-off setup</h2>
+  <ol class="steps">
+    <li>
+      <h3>Get the code</h3>
+      <p>Sign in to the admin page as RAY, find <b>Drop zone</b>, and click <b>server zip</b> and <b>app zip</b>. Unzip each somewhere on your C: drive, outside OneDrive, for example:</p>
+      <div class="cmd"><pre>C:\Dev\smartcube-server
+C:\Dev\smartcube-app</pre></div>
+      <p>Each zip contains one folder with a long name. That folder is the project.</p>
+    </li>
+    <li>
+      <h3>Create your settings file</h3>
+      <p>In the server folder, copy <code>appsettings.Example.json</code> and name the copy <code>appsettings.json</code>. Leave it as it is. It points at a database called <code>SmartCubeDev</code> on your PC.</p>
+    </li>
+    <li>
+      <h3>Create your database</h3>
+      <p>Open PowerShell in the server folder (in File Explorer, click the address bar, type <code>powershell</code> and press Enter), then paste:</p>
+      <div class="cmd"><pre id="c3">powershell -ExecutionPolicy Bypass -File .\Database\Apply-Migrations.ps1 -Server "(localdb)\MSSQLLocalDB" -Database SmartCubeDev -Create</pre><button type="button" data-copy="c3">Copy</button></div>
+      <div class="expect">You should see "Created database SmartCubeDev" and then four lines starting "Applied:". The database is empty: no users, no tariffs.</div>
+      <p>This uses LocalDB, which comes with Visual Studio. You only do this once.</p>
+    </li>
+    <li>
+      <h3>Run the server</h3>
+      <p>In Visual Studio 2022 choose <b>File &rarr; Open &rarr; Project</b>, pick <code>SmartCubeMobileV2026.csproj</code> in the server folder. In the toolbar's run dropdown choose <b>SmartCube (dev)</b> and press <b>F5</b>.</p>
+      <div class="expect">Your browser opens on your own copy of the SmartCube website at <code>http://localhost:5000</code>. Leave it running while you work.</div>
+    </li>
+    <li>
+      <h3>Make a test account</h3>
+      <p>On that page click <b>Register</b> and create an account, for example username <code>dadtest</code>. It exists only on your PC.</p>
+    </li>
+    <li>
+      <h3>Point the app at your server</h3>
+      <p>Open the app folder's <code>SmartCubeMobile.sln</code> in Visual Studio, choose <b>Windows Machine</b> and press F5. On the sign-in screen click the small <b>Server:</b> line at the bottom and enter:</p>
+      <div class="cmd"><pre id="c6">http://localhost:5000</pre><button type="button" data-copy="c6">Copy</button></div>
+      <p>Then sign in with your test account. To go back to the live server later, click the same line and leave it blank.</p>
+    </li>
+  </ol>
+
+  <h2>Day to day</h2>
+  <p>Start the server (F5 in the server project), start the app, work. Nothing depends on Dan's laptop. When something is ready for Dan, drop the project folder onto the admin page's drop zone as usual; that is the only step that needs the live server.</p>
+
+  <h2>What works on your copy</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Works</th><th>Needs a key in <code>appsettings.json</code></th></tr></thead>
+    <tbody><tr>
+      <td>Register and sign in, PIN and recovery key, the website pages, the admin page, tariff lookups (empty until you add data), support tickets and chat</td>
+      <td>Emails (password reset): <code>Email</code>. Smart Scan: <code>Claude:ApiKey</code>. Bank connections: <code>TrueLayer:ClientSecret</code>. These are blank on purpose; Dan can lend you a test value if you need one.</td>
+    </tr></tbody>
+  </table></div>
+  <p style="margin-top:10px">To make your own account an administrator on your copy, ask Dan for the one-line command; it takes a few seconds.</p>
+
+  <h2>If something goes wrong</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>You see</th><th>Try</th></tr></thead>
+    <tbody>
+      <tr><td>"running scripts is disabled"</td><td>Use the exact command in step 3, which includes <code>-ExecutionPolicy Bypass</code>.</td></tr>
+      <tr><td>The app says it can't reach the server</td><td>Is the server still running (step 4)? Is the address exactly <code>http://localhost:5000</code>, with <code>http</code>, not <code>https</code>?</td></tr>
+      <tr><td>The server fails to start with a database error</td><td>Run step 3 again. It is safe to repeat; it only adds what is missing.</td></tr>
+      <tr><td>Anything else</td><td>Copy the error text and send it to Dan.</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<script>
+  document.querySelectorAll('button[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var el = document.getElementById(b.getAttribute('data-copy'));
+      var done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1800); };
+      try { navigator.clipboard.writeText(el.textContent).then(done, function () { select(el); }); } catch (e) { select(el); }
+      function select(n) { var r = document.createRange(); r.selectNodeContents(n); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+    });
+  });
+</script>
